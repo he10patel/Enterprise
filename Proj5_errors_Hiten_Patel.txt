@@ -1,0 +1,13 @@
+Hiten Patel
+1000798100
+
+1) I couldn't figure out how to fill up the HashMap the first time command 20 is called. Then I thought
+	of having a static variable so that when command 20 would be called for the 2nd time, it would know 
+	that the HashMap has already been filled up.
+	
+2) To get rid the spaces in the beginning of the string for command 20 I used trim() to get ride of them.
+
+3) If a new key were to be added to the HashMap, then I also had to create an ArrayList for the value
+	every time a new key was added.
+	
+Hours: 7

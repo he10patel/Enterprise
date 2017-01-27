@@ -1,0 +1,2597 @@
+Script started on Wed 04 Dec 2013 11:34:28 PM CST
+]0;hnp8100@omega:~/java/Project5[hnp8100@omega Project5]$ ls -1
+dataFile-proj5.txt
+DateConstants.java
+Date.java
+Employee.java
+hnp8100_Patel_project5_002.log
+javadoc
+Proj3Constants.java
+StadiumMgmtTest.java
+Time.java
+]0;hnp8100@omega:~/java/Project5[hnp8100@omega Project5]$ cat StadiumMgmtTest.java
+/**
+ * Programmer: 	Sharma Chakravarthy
+ * Language:	Java
+ * date:        09/27/2013
+ * Purpose:	This program uses StadiumMgmtTest class to read data from a text file to initialize
+ * 		employees, facilities, games, users etc.
+ * 				
+ *              It checks and recovers from some exceptions while reading the input file
+ * 
+ * USAGE:       java StadiumMgmtTest <inputDataFile> <outputFileToWrite>
+ *              ex: java StadimumMgmtTest dataFile-proj3.txt out1.txt
+ *              if you do not provide files, you will be prompted for that!
+ *               
+ *              once the values are read into local variables, 
+ *              it  is YOUR responsibility to add code at proper places to create objects and manage them!
+ *     
+ *              you can remove or comment out prints once you are sure it is reading the input correctly
+ *
+ * MAKE SURE:   your program is case insensitive (for gender, employee type etc.)
+ */
+
+import java.io.*;
+/*import java.util.Scanner;
+import java.util.ArrayList;
+import java.util.Formatter;
+import java.util.Comparator;
+import java.util.Collections;
+import java.util.List;*/
+import java.util.*;
+import javax.swing.*;
+
+/**
+ * @param fileName
+ *            as input data filename containing input items with  ! as item separators
+ * @param   outputFileName as output file name 
+ */
+abstract class Person {
+	int personId;
+	String fName;
+	String lName;
+	Date dob;
+	String gender;
+	Date hireDate;
+	Date releaseDate;
+	static int idGen = 0;
+	
+	public Person(String f, String l, Date dob, String g, Date hd, Date rd) {
+		idGen++;
+		personId = idGen;
+		fName = f;
+		lName = l;
+		this.dob = dob;
+		gender = g;
+		hireDate = hd;
+		releaseDate = rd;
+	}
+	
+	public Person(int id, String f, String l, Date dob) {
+		personId = id;
+		fName = f;
+		lName = l;
+		this.dob = dob;
+		gender = null;
+		hireDate = null;
+		releaseDate = null;
+	}
+	abstract public int age();
+	
+	public void setReleaseDate(Date rDate) {
+		releaseDate = rDate;
+	}
+	
+	public String toString() {
+		String fString = String.format("%-4d %-10s %-10s %-12s %-8s %-12s %-12s", 
+			personId, fName, lName, dob, gender, hireDate, releaseDate);
+		return fString;
+	}
+}
+
+abstract class SalariedEmployee extends Person implements Employee {
+	String type;
+	
+	public SalariedEmployee(String f, String l, Date dob, String g, Date hd, Date rd, String t) {
+		super(f, l, dob, g, hd, rd);
+		type = t;
+	}
+	
+	public int getId() {
+		return personId;
+	}
+	
+	/**
+	* 
+	*/
+	@Override
+	public int age() {
+		Date todaysDate = new Date();
+		int a;
+		a = todaysDate.getYear() - dob.getYear();
+		return a;
+	}
+	
+	/**
+	*
+	*/
+	@Override
+	public int lengthOfService() {
+		int duration;
+		if(releaseDate != null) {
+			duration = releaseDate.getYear() - hireDate.getYear();  
+		}
+		else {
+			Date todaysDate = new Date();
+			duration = todaysDate.getYear() - hireDate.getYear();
+		}
+		return duration;
+	}
+}
+
+class WebDesigner extends SalariedEmployee {
+	private double monthlyBase;
+	private double salary;
+	
+	public WebDesigner(String f, String l, Date dob, String g, Date hd, Date rd, double mB, double sal) {
+		super(f, l, dob, g, hd, rd, "Web Designer");
+		monthlyBase = mB;
+		salary = sal;
+	}
+	
+	/**
+	* @param salaryParameter
+	*/
+	@Override
+	public double computeSalary(int salaryParameter) {
+		double total;
+		total = (salary * salaryParameter) + monthlyBase;
+		return total;
+	}
+	
+	/**
+	* toString
+	*/
+	public String toString() {
+		String fString = String.format("%s age: %d   length of service: %d\n", super.toString(), age(), lengthOfService());
+		return fString; 
+	}
+}
+
+class SalesExecutive extends SalariedEmployee {
+	private double monthlyBase;
+	private double commission;
+	
+	public SalesExecutive(String f, String l, Date dob, String g, Date hd, Date rd, double mB, double sal) {
+		super(f, l, dob, g, hd, rd, "Sales Executive");
+		monthlyBase = mB;
+		commission = sal;
+	}
+	
+	/**
+	* @param salaryParameter
+	*/
+	@Override
+	public double computeSalary(int salaryParameter) {
+		double total;
+		total = (commission * salaryParameter) + monthlyBase;
+		return total;
+	}
+	
+	public String toString() {
+		String fString = String.format(super.toString() + "age: %d   length of service: %d\n", age(), lengthOfService());
+		return fString; 
+	}
+}
+
+class Maintainer extends SalariedEmployee {
+	private double monthlyBase;
+	private double hourlyRate;
+	
+	public Maintainer(String f, String l, Date dob, String g, Date hd, Date rd, double mB, double sal) {
+		super(f, l, dob, g, hd, rd, "Maintainer");
+		monthlyBase = mB;
+		hourlyRate = sal;
+	}
+
+	/**
+	* @param salaryParameter
+	*/
+	@Override
+	public double computeSalary(int salaryParameter) {
+		double total;
+		total = (hourlyRate * salaryParameter) + monthlyBase;
+		return total;
+	}
+	
+	public String toString() {
+		String fString = String.format(super.toString() + "age: %d   length of service: %d\n", age(), lengthOfService());
+		return fString; 
+	}
+}
+
+class Security extends SalariedEmployee {
+	private double monthlyBase;
+	private double hourlyRate;
+	
+	public Security(String f, String l, Date dob, String g, Date hd, Date rd, double mB, double sal) {
+		super(f, l, dob, g, hd, rd, "Security");
+		monthlyBase = mB;
+		hourlyRate = sal;
+	}
+	
+	/**
+	* @param salaryParameter
+	*/
+	@Override
+	public double computeSalary(int salaryParameter) {
+		double total;
+		total = (hourlyRate * salaryParameter) + monthlyBase;
+		return total;
+	}
+	
+	public String toString() {
+		String fString = String.format(super.toString() + "age: %d   length of service: %d\n", age(), lengthOfService());
+		return fString; 
+	}
+}
+
+class Customer extends Person {
+	private String address;
+	private String state;
+	private String zipCode;
+	private String type;
+	
+	public Customer (int id, String f, String l, Date dob, String adrs, String s, String zip, String t) {
+		super(id, f, l, dob);
+		address = adrs;
+		state = s;
+		zipCode = zip;
+		type = t;
+	}
+	
+	/**
+	* age calc
+	*/
+	@Override
+	public int age() {
+		Date todaysDate = new Date();
+		int a;
+		a = todaysDate.getYear() - dob.getYear();
+		return a;
+	}
+	
+	public String toString() {
+		String fString = String.format(super.toString() + "%-21s %-4s %-5s %-8s\n", address, state, zipCode, type);
+		return fString;
+	}
+}
+
+class Facility {
+	private int id;
+	private String type;
+	public String name;
+	public int capacity;
+	public int floor;
+	public String rentalType;
+	private double rent;
+	
+	/**
+	* Constructor: sets input data to the attributes
+	* @param id facility id
+	* @param type facility type
+	* @param n name of facility
+	* @param capacity max capacity of the facility
+	* @param floor floor number
+	* @param rentalType rental type
+	* @param rent amount of rent
+	*/
+	public Facility(int id, String type, String n, int capacity, int floor, String rentalType, double rent) {
+		this.id = id;
+		this.type = type;
+		name = n;
+		this.capacity = capacity;
+		this.floor = floor;
+		this.rentalType = rentalType;
+		this.rent = rent;
+	}
+	
+	
+	/**
+	* @return returns the rent for the facility
+	*/
+	public double getRent() {
+		return rent;
+	}
+	/**
+	* replaces default toString of object class
+	*/
+	public String toString() {
+		String formattedString = String.format("%-4d %-17s %-17s %-7d %-4d %-16s %-10.2f\n", 
+			id, type, name, capacity, floor, rentalType, rent);
+		return formattedString;
+	}
+}
+
+class Game {
+	private int gameNum;
+	public Date date;
+	private Time time;
+	private String visitingTeam;
+	private int homeScore;
+	private int visitingScore;
+	
+	/**
+	* Constructor: sets input data to the attributes
+	* @param date date
+	* @param num game id
+	* @param time time that the game started
+	* @param visitT visiting team
+	* @param homeS score for home team
+	* @param visitS score for visiting team
+	*/
+	public Game(int num, Date date, Time time, String visitT, int homeS, int visitS) {
+		this.date = date;
+		gameNum = num;
+		this.time = time;
+		visitingTeam = visitT;
+		homeScore = homeS;
+		visitingScore = visitS;
+	}
+	
+	/**
+	* Constructor: default constructor that sets everything to null or 0
+	*/
+	public Game() {
+		date = null;
+		gameNum = 0;
+		time = null;
+		visitingTeam = null;
+		homeScore = 0;
+		visitingScore = 0;
+	}
+	
+
+	/**
+	* replaces default toString of object class
+	*/
+	public String toString() {
+		String formattedString = String.format("Date: %-12s Game Number: %-3d Time: %-9s Visiting Team: %-10s Home Score: %-4d Visiting Score: %-4d\n", 
+				date, gameNum, time, visitingTeam, homeScore, visitingScore);
+		return formattedString;
+	}
+	
+}
+
+class Enterprise implements Comparable<Enterprise>{
+	private String name;
+	public int flag=0;
+	
+	
+	private int salesEmpId;
+	private int custId;
+	
+	//ticket info
+	private String tktType;
+	private int gameID;
+	private String year;
+	private int numOfTkts;
+	private double amount;
+	private int boxID;
+	
+	//rental info
+	public String facilityName;
+	public Date date;
+	private int numOfPeople;
+	public int hours;
+	
+	/**
+	* Constructor: sets enterprise name to its attribute
+	* @param name enterprise name
+	*/
+	public Enterprise(String name) {
+		this.name = name;
+	}
+	
+	/**
+	* Constructor: sets input data to attributes for tickets
+	* @param sEmpId employee id that sold ticket to customer
+	* @param cId customer id that bought ticket 
+	* @param type ticket type
+	* @param gID game id
+	* @param year year of the game
+	* @param numOfTkts number of tickets
+	* @param amount price per ticket
+	* @param boxID id for box
+	*/
+	public Enterprise(int sEmpId, int cId, String type, int gID, String year, int numOfTkts, double amount, int boxID) {
+		salesEmpId = sEmpId;
+		custId = cId;
+		tktType = type;
+		gameID = gID;
+		this.year = year;
+		this.numOfTkts = numOfTkts;
+		this.amount = amount;
+		this.boxID = boxID;
+	}
+	
+	/**
+	* Constructor: sets input data to attributes for rentals
+	* @param sEmpId employee id that sold ticket to customer
+	* @param cId customer id that bought ticket
+	* @param facName facility name
+	* @param date date it was rented
+	* @param people number of people at facility
+	* @param hours hours
+	*/
+	public Enterprise(int sEmpId, int custID, String facName, Date date, int people, int hours) {
+		salesEmpId = sEmpId;
+		this.custId = custID;
+		facilityName = facName;
+		this.date = date;
+		numOfPeople = people;
+		this.hours = hours;
+		flag = 1;
+	}
+	
+	/**
+	* compares rental dates
+	* @param ri Enterprise object for rentals
+	* @return returns -1, 0, 1 for comparisons
+	*/
+	public int compareTo(Enterprise ri) {
+		int result = this.date.compareTo(ri.date);
+		return result;
+	}
+	
+	/**
+	* prints the total revenue from game tickets
+	* @param num game id
+	* @param year year the game was played
+	* @param tickets ArrayList of tickets
+	*/
+	public static void gameTotals(int num, String year, ArrayList<Enterprise> tickets) {
+		double total=0;
+		for(int i=0; i < tickets.size(); i++) {
+			if(tickets.get(i).flag == 0) {
+				if( (tickets.get(i).gameID == num) && (tickets.get(i).year.equals(year)) ) {
+					total = (tickets.get(i).numOfTkts * tickets.get(i).amount) + total;
+				}
+			}
+		}
+		System.out.printf("The total collection for game %d in the year %s is: $%f\n", num, year, total);
+	}
+	/**
+	* @param ticketyear
+	* @param type
+	* @param box
+	* @param tickets
+	*/
+	public void ticketTotals(String ticketYear, String type, int box, ArrayList<Enterprise> tickets) {
+		int total=0, yearTotal=0, typeTotal=0, boxTotal=0;
+		for(int i=0; i < tickets.size(); i++) {
+			total = total + tickets.get(i).numOfTkts;
+			
+		}
+		System.out.printf("The total number of tickets sold up to this point is %d\n", total); 
+		for(int i=0; i < tickets.size(); i++) {
+			if(ticketYear.equals(tickets.get(i).year)) {
+				yearTotal = yearTotal + tickets.get(i).numOfTkts;
+					
+			}
+		}
+		System.out.printf("%d tickets were sold for the year %s\n", yearTotal, ticketYear);
+		for(int i=0; i < tickets.size(); i++) {
+			if(type.equals(tickets.get(i).tktType)) {
+				typeTotal = typeTotal + tickets.get(i).numOfTkts;
+				
+			}
+		}
+		System.out.printf("%d tickets were sold for %s\n", typeTotal, type);
+		for(int i=0; i < tickets.size(); i++) {
+			if(box == tickets.get(i).boxID) {
+				boxTotal = boxTotal + tickets.get(i).numOfTkts;
+			}
+		}
+		System.out.printf("%d tickets were sold for box id %d\n", boxTotal, box);
+	}
+	
+	/**
+	* prints the total revenue from rentals
+	* @param rentals ArrayList of rentals objects
+	* @param facilities ArrayList of facility objects
+	*/
+	public static void rentTotals(ArrayList<Enterprise> rentals, ArrayList<Facility> facilities) {
+		double total=0;
+		for(int i = 0; i < rentals.size(); i++) {
+			if(rentals.get(i).flag == 1) {
+				for(int x = 0; x < facilities.size(); x++) {
+						if(rentals.get(i).facilityName.equals(facilities.get(x).name)) {
+							total = (rentals.get(i).hours * facilities.get(x).getRent()) + total;
+						}
+				}
+			}
+		}
+		System.out.printf("the total rent collection is $%f\n", total);
+		
+	}
+	/**
+	* gives total revenue of a facility
+	* @return total revenue
+	*/
+	public static double facilityTotalRevenue(String facName, ArrayList<Enterprise> rentals, ArrayList<Facility> facilities) {
+		double total=0;
+		for(int i=0; i < facilities.size(); i++) {
+			if(facName.equals(facilities.get(i).name)) {
+				for(int x=0; x < rentals.size(); x++) {
+					if(facName.equals(rentals.get(x).facilityName)) {
+						total = (rentals.get(x).hours * facilities.get(i).getRent()) + total;
+					}
+				}
+				
+			}
+			
+		}
+		return total;
+	}
+	/**
+	* @param input
+	* @param inputYear
+	* @param tickets
+	* @param rentals
+	* @param facilities
+	*/
+	public static void computeRevenue(String input, String inputYear, ArrayList<Enterprise> tickets, ArrayList<Enterprise> rentals, ArrayList<Facility> facilities) {
+		double indR=0, seaR=0, boxR=0, rentalR=0;
+		int indT=0, seaT=0, boxT=0;
+		if(input.equals("ticket")) {
+			for(int i=0; i < tickets.size(); i++) {
+				if(inputYear.equals(tickets.get(i).year) && tickets.get(i).tktType.equals("IND")) {
+					if(tickets.get(i).boxID != 0) {
+						indT = indT + tickets.get(i).numOfTkts;
+						indR = (tickets.get(i).numOfTkts * tickets.get(i).amount) + indR;
+					}
+					else {
+						boxT = boxT + tickets.get(i).numOfTkts;
+						boxR = (tickets.get(i).numOfTkts * tickets.get(i).amount) + boxR;
+					}
+				}
+				else if (inputYear.equals(tickets.get(i).year) && tickets.get(i).tktType.equals("SEA")) {
+						seaT = seaT + tickets.get(i).numOfTkts;
+						seaR = (tickets.get(i).numOfTkts * tickets.get(i).amount) + seaR;
+				}
+			}
+		}
+		
+		else {
+			int yearInt = Integer.parseInt(inputYear);
+			
+			for(int i=0; i < rentals.size(); i++) {
+				if(yearInt == rentals.get(i).date.getYear()) {
+					for(int x = 0; x < facilities.size(); x++) {
+						if(rentals.get(i).facilityName.equals(facilities.get(x).name)) {
+							rentalR = (rentals.get(i).hours * facilities.get(x).getRent()) + rentalR;
+						}
+					}
+				}
+			}
+			System.out.printf("The rental revenue for the year %s is $%1.2f\n", inputYear, rentalR);
+		}
+	}
+	
+	/**
+	* @param inputYear
+	* @param rentals
+	* @param facilities
+	*/
+	public static void facilityReport(int inputYear, ArrayList<Enterprise> rentals, ArrayList<Facility> facilities) {
+		double revenue=0;
+		String yearStr = String.valueOf(inputYear);
+		System.out.printf("%-12s %-2s %-5s\n", "date", "duration", "revenue");
+		for(int i=0; i < rentals.size(); i++) {
+			if(inputYear == rentals.get(i).date.getYear()) {
+				for(int x = 0; x < facilities.size(); x++) {
+					if(rentals.get(i).facilityName.equals(facilities.get(x).name)) {
+						revenue = (rentals.get(i).hours * facilities.get(x).getRent()) + revenue;
+						break;
+					}
+				}
+				
+				System.out.printf("%-12s %-2d $%-5.2f ", 
+				rentals.get(i).date, rentals.get(i).hours, revenue);
+			}
+		}
+	}
+
+	
+	/**
+	* checks if employee exists
+	* @param id employee id
+	* @param employees ArrayList of employee objects
+	* @return true if employee exists, false if employee doesn't exist
+	*/
+	public static boolean employeeExistence(int id, ArrayList<SalariedEmployee> employees) {
+		for(int i = 0; i < employees.size(); i++) {
+			if(id == employees.get(i).getId()) 
+				return true;
+		}
+		return false;
+	}
+	
+	/**
+	* terminates an employee
+	* @param id employee id
+	* @param aDate date
+	* @param employees ArrayList of employee objects
+	*/
+	public static void terminateEmployee(int id, String aDate, ArrayList<SalariedEmployee> employees) {
+		if(aDate.length() == 1) {
+			Date todaysDate = new Date();
+			for(int i=0; i < employees.size(); i++) {
+				if(id == employees.get(i).personId) {
+					employees.get(i).setReleaseDate(todaysDate);
+				}
+			}
+		}
+		else {
+			Date rDate = new Date(aDate);
+			for(int i=0; i < employees.size(); i++) {
+				if(id == employees.get(i).personId) {
+					employees.get(i).setReleaseDate(rDate);
+				}
+			}
+		}
+		System.out.printf("%-3s %-10s %-10s %-12s\n", "ID", "First Name", "Last Name", "Release Date");
+		for(int i=0; i < employees.size(); i++) {
+			System.out.printf("%-3d %-10s %-10s %-12s \n",
+			employees.get(i).personId, employees.get(i).fName, employees.get(i).lName, employees.get(i).releaseDate);
+		}
+	}
+	
+	/**
+	* gets name of enterprise
+	* @return returns the name of enterprise
+	*/
+	public String getName () {
+		return name;
+	}
+	
+	/**
+	* replaces default toString of object class
+	*/
+	public String toString() {
+		if(flag==0) {
+			String formattedString = String.format("Employee ID: %-3d Customer ID: %-3d Ticket: %-4s Game ID: %-3d Year: %-5d # of Ticket: %-4d Amount: %-10.2f Box ID: %-3d\n",
+			salesEmpId, custId, tktType, gameID, year, numOfTkts, amount, boxID);
+			return formattedString;
+		}
+		else {
+			String formattedString = String.format("Employee ID: %-3d Customer ID: %-3d Facility: %-11s Date: %-12s People: %-6d Hours: %-2d\n",
+			salesEmpId, custId, facilityName, date, numOfPeople, hours);
+			return formattedString;
+		}
+	}
+}
+
+
+class GameComparator implements Comparator<Game> {
+	/**
+	* compares game dates
+	* @param game1 compares to game2 date
+	* @param game2 compares to game1 date
+	* @return returns -1,0, or 1 for comparisons
+	*/
+	public int compare(Game game1, Game game2) {
+		int result = game1.date.compareTo(game2.date);
+		return result;
+	}
+}
+
+
+
+public class StadiumMgmtTest implements Proj3Constants, DateConstants {
+
+	// introduce your (class and instance) attributes (if needed) for this test class
+    // as i have indicated, it is preferable to have a StadiumMgmt class for the enterprise
+    // and use this ONLY as a driver or test class
+    // that way, this class can be removed to make your system a library!!
+
+	private static BufferedReader finput;   //for reading from a file
+    private static Scanner cp;              //this is still command prompt
+    private static PrintWriter foutput;     //for writing to a file
+    private static int command20Status = 0;
+
+    //define other variables as needed
+
+    //Note that we are using a DIFFERENT method for reading input file;
+	/**
+	 * @param iFileName is the input data file name
+	 */		
+
+    public static BufferedReader openReadFile(String iFileName){
+        BufferedReader bf = null;
+        try{
+            bf = new BufferedReader(new FileReader(iFileName));
+        }     
+        catch(FileNotFoundException FNFE){    
+          bf = null;
+        }
+       finally{
+          return bf;
+       }
+    }
+
+/**
+	 * @param oFileName is the input data file name
+	 */		
+    
+    public static PrintWriter openWriteFile(String oFileName){
+        PrintWriter outputFile = null;
+        try{
+            outputFile = new PrintWriter(new FileWriter(oFileName));
+        }     
+        catch(IOException IOE){    
+          outputFile = null;
+        }
+       finally{
+          return outputFile;
+       }
+    }
+    
+	
+	// add here constructors and methods as needed for this Test class
+
+	/**
+	 * takes fineNames as command line arguments. prompts if not given
+	 *            
+	 */
+	public static void main(String[] args) {
+
+		// declare variables used for input handling
+        String enterprisename = DEFAULT_ENTERPRISE_NAME;
+        String inputLine = EMPTY_STRING, ifName = EMPTY_STRING, ofName = EMPTY_STRING;
+        ArrayList<SalariedEmployee> employees = new ArrayList<SalariedEmployee> ();
+        ArrayList<Facility> facilityList = new ArrayList<Facility> ();
+        ArrayList<Game> gameList = new ArrayList<Game> ();
+        ArrayList<Person> customerList = new ArrayList<Person> ();
+        ArrayList<Enterprise> tickets = new ArrayList<Enterprise> ();
+		ArrayList<Enterprise> facilities = new ArrayList<Enterprise> ();
+		List <Game> list = new ArrayList<Game> ();
+		List <Enterprise> rentalList = new ArrayList<Enterprise>();
+		Map<String, ArrayList<Enterprise>> rentalsHashMap = new HashMap<String, ArrayList<Enterprise>>();
+		// determine if input file is provided
+
+		cp = new Scanner(System.in);
+		if (args.length < 1) {
+			System.out.println("Input Data file name was not supplied");
+			System.out.printf("Please type input data file name: ");
+			ifName = cp.nextLine();
+		} 
+        else if (args.length < 2){
+            ifName =  args[ZEROI];
+            System.out.println("Output file name was not supplied");       
+            System.out.printf("Please type output file name: ");
+            ofName = cp.nextLine();
+        } 
+        else {
+        	ifName = args[ZEROI];
+            ofName = args[ONEI];
+        }
+
+		// See HOW RECOVERY is done (will cover in a few weeks)
+
+		finput = openReadFile(ifName);
+		while (finput == null) {
+			System.out.printf("Error: input data FILE %s %s", ifName,
+					" does not exist.\nEnter correct INPUT data file name: ");
+			ifName = cp.nextLine();
+			finput = openReadFile(ifName);
+		}
+        foutput = openWriteFile(ofName);
+        while (foutput == null){
+			System.out.printf("Error: OUTPUT FILE %s %s",  ofName,  
+                        " does not exist.\nEnter correct OUTPUT FILE name: ");
+            ofName = cp.nextLine();
+            foutput = openWriteFile(ofName);
+		}  
+
+        System.out.printf("Input data File: %s\nOutput File: %s\n\n", ifName, ofName);
+        foutput.printf("Input data File: %s\nOutput File: %s\n\n", ifName, ofName); 
+		
+
+		/* GET Stadium DETAILS */
+		// start reading from data file
+		// get name
+		try {
+			inputLine = finput.readLine();
+			while (inputLine.charAt(BASE_INDEX) == '/')
+				inputLine = finput.readLine();
+			String enterpriseName = inputLine;
+			System.out.printf("\n%s %s \n", "Enterprise name is: ",
+					enterpriseName);
+
+			// add code: you need to store enterprise name in the enterprise aobject!
+			Enterprise enterpriseObj = new Enterprise(enterpriseName);
+			
+			/* GET EMPLOYEE DETAILS */
+
+			// reading details for each employee from the data file
+			System.out.printf("\nReading Employees: \n");
+
+			int numEmployees = 0;
+			inputLine = finput.readLine();
+            foutput.println(inputLine); //writing to the output file!
+			while (inputLine.charAt(BASE_INDEX) == '/'){
+				inputLine = finput.readLine();
+                foutput.println(inputLine);
+            }
+			while ( (!inputLine.toLowerCase().equals("end"))){	
+                String[] chopEmp = inputLine.split("!");
+
+				// fill all fields for a single employee from a single line
+				String empType = chopEmp[ZEROI].toUpperCase();
+				String empFName = chopEmp[ONEI];
+				String empLName = chopEmp[TWOI];
+				String empBDate = chopEmp[THREEI];
+				String empGender = chopEmp[FOURI].toLowerCase();
+				String empHireDate = chopEmp[FIVEI];
+                String empReleaseDate = chopEmp[SIXI];
+				double empBaseSalary = Double.parseDouble(chopEmp[SEVENI]);
+                double empHourlyrate = Double.parseDouble(chopEmp[EIGHTI]);
+
+				// add code here: in order to convert a date string to a Date object,
+				// invoke the appropriate constructor of the Date class (shown below)
+				Date dob = new Date(empBDate); // dob is a local variable
+				Date hDate = new Date(empHireDate); 
+
+				System.out.printf("(%6s, %10s, %6s, %12s, %12s,  %10.2f, %4s, %12s)\n",
+						empFName, empLName, empGender, empHireDate,
+						empReleaseDate, empBaseSalary, empType, dob);
+
+				// also, empType is read as a string; if you are using a
+				// enum, you need to convert it  using a switch 
+                //or if statement or enum valueOf() method
+
+                // add code here: based on the empType appripriate class objects 
+                // of the inheritance hierarchy need to be created
+                //make sure you set the release date to null (will be used later)
+                //add this employee to an array or array list
+                
+                if(empType.equals("WD")) {	
+                	if(!empReleaseDate.equals("null")) {
+                		Date rDate = new Date(empReleaseDate);
+                		SalariedEmployee emp = new WebDesigner(empFName, empLName, dob, empGender, hDate, rDate, empBaseSalary, empHourlyrate);
+                		employees.add(emp);
+                	}
+                	else {
+                		SalariedEmployee emp = new WebDesigner(empFName, empLName, dob, empGender, hDate, null, empBaseSalary, empHourlyrate);
+                		employees.add(emp);
+                	}
+                }
+                else if(empType.equals("MNTR")) {
+                	if(!empReleaseDate.equals("null")) {
+                		Date rDate = new Date(empReleaseDate);
+                		SalariedEmployee emp = new Maintainer(empFName, empLName, dob, empGender, hDate, rDate, empBaseSalary, empHourlyrate);
+                		employees.add(emp);
+                	}
+                	else {
+                		SalariedEmployee emp = new Maintainer(empFName, empLName, dob, empGender, hDate, null, empBaseSalary, empHourlyrate);
+                		employees.add(emp);
+                	}
+                }
+                else if(empType.equals("SEC")) {
+                	if(!empReleaseDate.equals("null")) {
+                		Date rDate = new Date(empReleaseDate);
+                		SalariedEmployee emp = new Security(empFName, empLName, dob, empGender, hDate, rDate, empBaseSalary, empHourlyrate);
+                		employees.add(emp);
+                	}
+                	else {
+                		SalariedEmployee emp = new Security(empFName, empLName, dob, empGender, hDate, null, empBaseSalary, empHourlyrate);
+                		employees.add(emp);
+                	}
+                }
+                else if(empType.equals("SALES")) {
+                	if(!empReleaseDate.equals("null")) {
+                		Date rDate = new Date(empReleaseDate);
+                		SalariedEmployee emp = new SalesExecutive(empFName, empLName, dob, empGender, hDate, rDate, empBaseSalary, empHourlyrate);
+                		employees.add(emp);
+                	}
+                	else {
+                		SalariedEmployee emp = new SalesExecutive(empFName, empLName, dob, empGender, hDate, null, empBaseSalary, empHourlyrate);
+                		employees.add(emp);
+                	}
+                }
+                
+                inputLine = finput.readLine();
+                foutput.println(inputLine);
+				while (inputLine.charAt(BASE_INDEX) == '/'){
+					inputLine = finput.readLine();
+                    foutput.println(inputLine);	
+                }
+                numEmployees +=1;
+			}
+            System.out.printf("#Employees: %d\n", numEmployees);
+
+			/* GET FACILITY DETAILS */
+
+            System.out.printf("\nReading Facilities: \n");
+            int numFacilities = 0;
+            inputLine = finput.readLine();
+            foutput.println(inputLine);
+            while (inputLine.charAt(BASE_INDEX) == '/'){
+                inputLine = finput.readLine();
+                foutput.println(inputLine);
+            }
+            while ( (!inputLine.toLowerCase().equals("end"))){            
+                String[] chopPLots = inputLine.split("!");
+            
+                // get fields of a facility from one line of input
+			
+                int  facilityId = Integer.parseInt(chopPLots[ZEROI]);
+                String  facilityType = chopPLots[ONEI];
+                String  facilityName = chopPLots[TWOI];
+                int facilityMaxCapacity = Integer.parseInt(chopPLots[THREEI]);
+                int facilityLocation = Integer.parseInt(chopPLots[FOURI]);
+                String rentalType = chopPLots[FIVEI];
+                double facilityRent = Double.parseDouble(chopPLots[SIXI]);
+
+                System.out.printf("[%d, %s, %s, %d, %d, %s,  %f]\n",facilityId,facilityType,
+                    facilityName,facilityMaxCapacity, facilityLocation,
+                    rentalType,facilityRent);
+                
+                // add code here to create facility object 
+                // convert strings to enum as needed
+                Facility facility = new Facility(facilityId, facilityType, facilityName, facilityMaxCapacity, facilityLocation, rentalType, facilityRent);
+                facilityList.add(facility);
+                
+                inputLine = finput.readLine();
+                foutput.println(inputLine);
+				while (inputLine.charAt(BASE_INDEX) == '/'){
+					inputLine = finput.readLine();
+                    foutput.println(inputLine);	
+                }
+                numFacilities +=1;
+             }
+            System.out.printf("#Facilities: %d\n", numFacilities);
+            
+            /* GET GAME DETAILS */
+            System.out.printf("\nReading GAMES: \n");
+            int numGames = 0;
+            inputLine = finput.readLine();
+            foutput.println(inputLine);
+            while (inputLine.charAt(BASE_INDEX) == '/'){
+                inputLine = finput.readLine();
+                foutput.println(inputLine);
+            }
+            while ( (!inputLine.toLowerCase().equals("end"))){    
+                String[] chopPLots = inputLine.split("!");
+                            
+                //get details of games from each line of input
+                int gameNumber = Integer.parseInt(chopPLots[ZEROI]);
+                String gameDate = chopPLots[ONEI];
+                String gameTime = chopPLots[TWOI];
+                String visitingTeam = chopPLots[THREEI];
+                int homeScore = Integer.parseInt(chopPLots[FOURI]);
+                int awayScore = Integer.parseInt(chopPLots[FIVEI]);
+                Date dog = new Date(gameDate);
+                Time tog = new Time(gameTime);
+                System.out.printf("[%s,  %d,  %s,  %s, %d, %d]\n", dog, gameNumber,
+                    tog, visitingTeam,homeScore, awayScore);
+                //create object and store
+                Game newGame = new Game(gameNumber, dog, tog, visitingTeam, homeScore, awayScore);
+                gameList.add(newGame);
+                list.add(newGame);
+                
+                inputLine = finput.readLine();
+                foutput.println(inputLine);
+				while (inputLine.charAt(BASE_INDEX) == '/'){
+					inputLine = finput.readLine();
+                    foutput.println(inputLine);	
+                }
+                numGames +=1;
+            }                      
+             System.out.printf("#Games: %d\n", numGames);
+                        
+            /* GET CUSTOMER/USER DETAILS */
+
+            // reading details for each user from the data file
+            // note that numUsers is computed, not input!
+                        
+            System.out.printf("\nRead Customer info: \n");
+			
+            int numUsers =0;
+            inputLine = finput.readLine();
+            while (inputLine.charAt(BASE_INDEX) == '/'){
+                inputLine = finput.readLine();
+                foutput.println(inputLine);
+            }
+            while ( (!inputLine.toLowerCase().equals("end"))){
+              System.out.println(inputLine);
+              String[] chopUser = inputLine.split("!");
+              // fill all fields for a single user/customer from a single line
+              int userId = Integer.parseInt(chopUser[ZEROI]);
+              String userFName = chopUser[ONEI];
+              String userLName = chopUser[TWOI];
+              String userDob = chopUser[THREEI];
+              String userAddress = chopUser[FOURI];
+              String userState = chopUser[FIVEI].toUpperCase();
+              String userZipcode = chopUser[SIXI];
+              String userType = chopUser[SEVENI].toUpperCase();
+              Date dobUser = new Date(userDob);
+              System.out.printf("{%d, %10s, %10s, %10s, %20s, %6s, %6s, %10s} \n",
+                    userId,userFName, userLName,dobUser, userAddress, userState, 
+                    userZipcode, userType);
+
+            // create a user object as appropriate
+            Person newCustomer = new Customer(userId, userFName, userLName, dobUser, userAddress, userState, userZipcode, userType);
+            customerList.add(newCustomer);
+
+            inputLine = finput.readLine();
+            while (inputLine.charAt(BASE_INDEX) == '/'){
+				inputLine = finput.readLine();
+                foutput.println(inputLine);
+            }
+                numUsers += 1;
+		  }
+          System.out.printf("#users/customers: %d\n", numUsers);
+          
+          // you will be adding MOST of your menu processing code here
+          // add code for processing menu and its output
+          // DO NOT REMOVE THE CODE but add to it
+          //remove print stmts once you have made sure input processing is correct!
+            
+            System.out.printf("\nStarting Menu Processing: \n\n");
+            foutput.println("\nStarting Menu Processing: \n\n");
+          
+          //read each line as before and process according to the menu number
+            inputLine = finput.readLine();
+            System.out.println(inputLine);
+            foutput.println(inputLine);
+			while (inputLine.charAt(BASE_INDEX) == '/'){
+				inputLine = finput.readLine();
+                System.out.println(inputLine);
+                foutput.println(inputLine);
+            }
+            System.out.println("10) Show the menu of project 2");
+            System.out.println("11) Accept ticket sales info");
+            System.out.println("12) Accept rental info");
+            System.out.println("13) Hire a new employee");
+            System.out.println("14) Terminate an employee");
+            System.out.println("15) Compute monthly salary of an employee");
+            System.out.println("16) Compute length of service");
+            System.out.println("17) Revenue computation");
+            System.out.println("18) Facility report");
+            System.out.println("19) Sort Game");
+            System.out.println("0) Exit program");
+            
+            foutput.println("10) Show the menu of project 2");
+            foutput.println("11) Accept ticket sales info");
+            foutput.println("12) Accept rental info");
+            foutput.println("13) Hire a new employee");
+            foutput.println("14) Terminate an employee");
+            foutput.println("15) Compute monthly salary of an employee");
+            foutput.println("16) Compute length of service");
+            foutput.println("17) Revenue computation");
+            foutput.println("18) Facility report");
+            System.out.println("19) Sort Game");
+            foutput.println("0) Exit program");
+
+            while ( (!inputLine.toLowerCase().equals("end"))){
+				String[] chopMenuLine = inputLine.split("!");
+
+            switch (Integer.parseInt(chopMenuLine[ZEROI])){
+            
+            case 10: //for processing project 2 commands
+                System.out.println("1) List all employees");
+            	System.out.println("2) List all facilities");
+            	System.out.println("3) List all games");
+            	System.out.println("4) List all customers");
+            	System.out.println("5) Display total collection for a game");
+            	System.out.println("6) Display total collection from rentals");
+            	System.out.println("7) Release an employee");
+            	System.out.println("0) Exit program");
+                break;
+            case 11: // process ticket information for games
+                   
+				    String[] chopTicketingInfo = inputLine.split("!");
+
+                    // fill all fields for a single ticket from a single line
+                    // c-id!type of tkt (individual, season)!game id (0 if season tkt)!
+                    // year!#tkts!amount!box id/0 for regular       
+                            
+                    int salesEmpId = Integer.parseInt(chopTicketingInfo[ONEI]);
+                    int custId = Integer.parseInt(chopTicketingInfo[TWOI]);
+                    String ticketType = chopTicketingInfo[THREEI];
+                    int gameId = Integer.parseInt(chopTicketingInfo[FOURI]);
+                    String gameTicketYear = chopTicketingInfo[FIVEI];
+                    int noOfTickets = Integer.parseInt(chopTicketingInfo[SIXI]);
+                    double ticketAmount = Double.parseDouble(chopTicketingInfo[SEVENI]);
+                    int ticketBoxId = Integer.parseInt(chopTicketingInfo[EIGHTI]);
+                				
+                    System.out.printf("{%d, %d, %s, %d, %4s, %d, %f, %d} \n",
+						salesEmpId, custId, ticketType, gameId, gameTicketYear, noOfTickets, 
+                        ticketAmount, ticketBoxId);
+                    
+                    Enterprise ticketInfo = new Enterprise(salesEmpId, custId, ticketType, gameId, gameTicketYear, noOfTickets, ticketAmount, ticketBoxId);
+                    tickets.add(ticketInfo);
+                    
+                    ticketInfo.ticketTotals(gameTicketYear, ticketType, ticketBoxId, tickets);
+                    
+                    break;
+            case 12:// process facility rental info
+                
+				    String[] chopRentalInfo = inputLine.split("!");
+
+                    // fill all fields for a single rental from a single line
+                    // Customer id!Facility type!Date! #people using the facility (0 if stall)!days/hours (int) depending on the facility      
+                            
+                    int salesEmpID = Integer.parseInt(chopRentalInfo[ONEI]);
+                    int custID = Integer.parseInt(chopRentalInfo[TWOI]);
+                    String facilityType = chopRentalInfo[THREEI].toLowerCase();
+                    String rentalDateString = chopRentalInfo[FOURI];
+                    int peopleUsingFacility = Integer.parseInt(chopRentalInfo[FIVEI]);
+                    int durationOfRent = Integer.parseInt(chopRentalInfo[SIXI]);
+                    Date rentalDate = new Date(rentalDateString);
+                                            				
+                    System.out.printf("{%5d, %4d, %12s %12s, %d, %d} \n",
+						salesEmpID, custID, facilityType, rentalDate, 
+                        peopleUsingFacility, durationOfRent);
+                        
+                    Enterprise facilityInfo = new Enterprise(salesEmpID, custID, facilityType, rentalDate, peopleUsingFacility, durationOfRent);
+                    facilities.add(facilityInfo);
+                    rentalList.add(facilityInfo);
+                    for(int i=0; i < facilities.size(); i++) {
+                    	System.out.println(facilities.get(i));
+                    }
+                    
+                     break;
+            case 13://process hiring a new employee
+            	String[] chopHiringInfo = inputLine.split("!");
+            	
+            	String empType = chopHiringInfo[ONEI].toUpperCase();
+            	String fName = chopHiringInfo[TWOI];
+            	String lName = chopHiringInfo[THREEI];
+            	String dobStr = chopHiringInfo[FOURI];
+            	Date dob = new Date(dobStr);
+            	String gender = chopHiringInfo[FIVEI].toLowerCase();
+            	String hireDateStr = chopHiringInfo[SIXI];
+            	Date hireDate = new Date(hireDateStr);
+            	double salary = Double.parseDouble(chopHiringInfo[SEVENI]);
+            	double rate = Double.parseDouble(chopHiringInfo[EIGHTI]);
+            	Date rDate = new Date();
+            	
+                if(empType.equals("WD")) {
+                	SalariedEmployee newEmp = new WebDesigner(fName, lName, dob, gender, hireDate, null, salary, rate);
+                	employees.add(newEmp);
+                	System.out.println(newEmp);
+                }
+                else if(empType.equals("MNTR")) {
+                	SalariedEmployee newEmp = new Maintainer(fName, lName, dob, gender, hireDate, null, salary, rate);
+                	employees.add(newEmp);
+                	System.out.println(newEmp);
+                }
+                else if(empType.equals("SEC")) {
+                	SalariedEmployee newEmp = new Security(fName, lName, dob, gender, hireDate, null, salary, rate);
+                	employees.add(newEmp);
+                	System.out.println(newEmp);
+                }
+                else if(empType.equals("SALES")) {
+                	SalariedEmployee newEmp = new SalesExecutive(fName, lName, dob, gender, hireDate, null, salary, rate);
+                	employees.add(newEmp);
+                	System.out.println(newEmp);
+                }
+                
+                
+            	
+                    break;
+            case 14://terminate an employee
+            	String[] chopEmployee = inputLine.split("!");
+            	int empId = Integer.parseInt(chopEmployee[ONEI]);
+            	String aDate = chopEmployee[TWOI];
+            	
+            	Enterprise.terminateEmployee(empId, aDate, employees);
+            	
+                break;
+            case 15://compute monthly salary
+            	String[] chopSalary = inputLine.split("!");
+            	int id = Integer.parseInt(chopSalary[ONEI]);
+            	int param = Integer.parseInt(chopSalary[TWOI]);
+            	int month = Integer.parseInt(chopSalary[THREEI]);
+            	
+            	double sal;
+            	for(int i=0; i < employees.size(); i++) {
+            		if(id == employees.get(i).personId) {
+            			sal = employees.get(i).computeSalary(param);
+            			System.out.printf("%-3d %-16s %-11s %-11s %-6s %-3d %-7.2f\n",
+            			id, employees.get(i).type, employees.get(i).fName, employees.get(i).lName, employees.get(i).gender, month, sal);  
+            		}
+            	}
+                    break;
+            case 16://compute length of service
+            	String[] chopServiceLength = inputLine.split("!");
+				int iD = Integer.parseInt(chopServiceLength[ONEI]);
+				
+				if(iD == 0) {
+					for(int i=0; i < employees.size(); i++) {
+						System.out.println(employees.get(i));
+					}
+				}
+				else {
+					for(int i=0; i < employees.size(); i++) {
+						if(iD == employees.get(i).personId) {
+							System.out.println(employees.get(i));
+						}
+					}
+				}
+                break;
+                    
+            case 17:// compute ticket revenue
+            	String[] chopTktRevenue = inputLine.split("!");
+				String input = chopTktRevenue[ONEI].toLowerCase();
+				String year = chopTktRevenue[TWOI];
+				
+				Enterprise.computeRevenue(input, year, tickets, facilities, facilityList);
+				
+                break;
+            case 18: //generate facility report
+            	String[] chopYear = inputLine.split("!");
+            	int inputYear = Integer.parseInt(chopYear[ONEI]);
+            	String yearStr = String.valueOf(inputYear);
+            	
+            	Enterprise.facilityReport(inputYear, facilities, facilityList);
+            	Enterprise.computeRevenue("rental", yearStr, tickets, facilities, facilityList);
+            	
+                break;
+            case 19: //prints sorted games by date
+            	Collections.sort(list, Collections.reverseOrder(new GameComparator()));
+            	System.out.printf("%s", list);
+            	
+            	break;
+            case 20:
+            	int i, flag=0;
+            	String newName;
+            	String[] chopFacName = inputLine.split("!");
+            	String name = (chopFacName[ONEI]).trim();
+            	if((name.equals("*")) == false){
+            		name.toLowerCase();
+            		newName = name.replace(" ", "!");
+            		flag=1;
+            	}
+            	
+            	if(command20Status == 0) {
+            		command20Status = 1;
+            		for(i=0; i < facilities.size(); i++) {
+            			if((rentalsHashMap.isEmpty())==false && rentalsHashMap.containsKey(facilities.get(i).facilityName)) {
+            				ArrayList<Enterprise> temp = new ArrayList<Enterprise>();
+            				temp = rentalsHashMap.get(facilities.get(i).facilityName);
+            				temp.add(facilities.get(i));
+            				rentalsHashMap.put(facilities.get(i).facilityName, temp);
+            			}
+            			else {
+            				ArrayList<Enterprise> fac = new ArrayList<Enterprise>();
+            				fac.add(facilities.get(i));
+            				rentalsHashMap.put(facilities.get(i).facilityName, fac);
+            			}
+            		}
+            	}
+            	if(flag==1) {
+            		if(rentalsHashMap.containsKey(name)) {
+            			ArrayList<Enterprise> temp1 = new ArrayList<Enterprise>();
+            			temp1 = rentalsHashMap.get(name);
+            			Collections.sort(temp1);
+            			for(i=0; i < temp1.size(); i++) {
+            				System.out.printf("%s", temp1.get(i));
+            			}
+            		}
+            		else
+            			System.out.printf("%s does not exist.\n", name);
+            	}
+            	else{
+            		for(ArrayList<Enterprise> r : rentalsHashMap.values()) {
+            			for(i=0; i < r.size(); i++) {
+            				Collections.sort(r);
+            				System.out.printf("%s", r.get(i));
+            			}
+            		}
+            	}
+				
+            	break;
+            case 0: //process exit
+                break;
+            default: System.out.printf("unknown command: %s: SKIPPED\n", inputLine);
+                    foutput.printf("unknown command: %s: SKIPPED\n", inputLine);
+                    break;       
+                     
+            }	
+            inputLine = finput.readLine();
+            System.out.println(inputLine);
+            foutput.println(inputLine);
+			while (inputLine.charAt(BASE_INDEX) == '/'){
+				inputLine = finput.readLine();
+                System.out.println(inputLine);
+                foutput.println(inputLine);
+            }
+        } 
+         System.out.printf("Finished processing all commands. bye!"); 
+         foutput.printf("Finished processing all commands. bye!");      
+        		// DO NOT REMOVE or DISTURB the REST OF THE CODE	
+
+	    } //try
+        catch(NullPointerException NPE){
+            System.out.println("null pointer exception: " + "\nPlease correct " + NPE.getMessage());
+          } 
+        catch (NumberFormatException NFE) {
+			System.out.println("I/O Error in File: " + ifName + "\ncheck for: "
+					+ NFE.getMessage() + " and correct it in: " + inputLine);
+		  } 
+        catch (RuntimeException RE) {
+			System.out.println("Invalid Data error in File: " + ifName
+					+ "\nPlease correct " + RE.getMessage() + " in the file!" + inputLine);
+		  }
+        catch(IOException IOE){
+            System.out.println("input/output Data error in File: " + ifName + "\nPlease correct " + IOE.getMessage() + " in the file!" + inputLine);
+          } 
+        
+        finally {
+		  foutput.close();
+		  }
+		/*TabbedMenu menu = new TabbedMenu(employees, facilityList, gameList, customerList, facilities);
+		menu.setSize( 800, 600 );
+		menu.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		menu.setVisible(true);*/
+		
+
+	}//main
+} //class]0;hnp8100@omega:~/java/Project5[hnp8100@omega Project5]$ javac *.java
+]0;hnp8100@omega:~/java/Project5[hnp8100@omega Project5]$ ls -1
+Customer.class
+dataFile-proj5.txt
+Date.class
+DateConstants.class
+DateConstants.java
+Date.java
+Employee.class
+Employee.java
+Enterprise.class
+Facility.class
+Game.class
+GameComparator.class
+hnp8100_Patel_project5_002.log
+javadoc
+Maintainer.class
+Person.class
+Proj3Constants.class
+Proj3Constants.java
+SalariedEmployee.class
+SalesExecutive.class
+Security.class
+StadiumMgmtTest.class
+StadiumMgmtTest.java
+Time.class
+Time.java
+WebDesigner.class
+]0;hnp8100@omega:~/java/Project5[hnp8100@omega Project5]$ java StadiumMgmtTest.java[K[K[K[K[K
+Input Data file name was not supplied
+Please type input data file name: dataFile-proj5.txt
+Error: OUTPUT FILE   does not exist.
+Enter correct OUTPUT FILE name: outputF.txtile       ile.txt
+Input data File: dataFile-proj5.txt
+Output File: outputFile.txt
+
+
+Enterprise name is:  Stadium Management Systems Ltd. 
+
+Reading Employees: 
+(  katy,      dough, female,   11-09-2006,         null,     1500.00,   WD,   [7-1-1982])
+(Jennifer,     Butter, female,   11-09-1999,   11-09-2013,     1000.00,   WD,   [7-2-1962])
+(  sara, Longbottom,   male,   01-02-2010,         null,      800.00, MNTR, [11-13-1980])
+(  dave, richardson,   male,   11-12-2005,   10-09-2013,     1800.00, MNTR,  [4-15-1964])
+( sarah,     connor,   male,   07-11-2011,         null,     1200.00, MNTR,  [3-25-1984])
+(  john,      smith,   male,   04-07-2007,         null,     1300.00,  SEC,   [4-1-1978])
+(jennifer,   longhorn, female,   04-07-2001,   07-04-2012,     1100.00,  SEC,   [3-2-1968])
+( james,       bond,   male,   02-20-2005,         null,      800.00, SALES, [12-10-1976])
+(  anne,  haathaway, female,   10-24-2006,         null,     2000.00, SALES,  [8-13-1984])
+( marie,      hales, female,   10-24-2006,         null,     2000.00, SALES,  [8-31-1987])
+#Employees: 10
+
+Reading Facilities: 
+[3, stadium, cowboys stadium, 95000, 0, PER_DAY,  100000.000000]
+[4, party venue, venue 1, 100, 3, PER_HOUR,  4000.000000]
+[5, party venue, venue 2, 200, 2, PER_HOUR,  5000.000000]
+[6, individual tour, tour i, 1, 0, FIXED_DURATION,  50.000000]
+[7, group tour, tour g, 15, 0, FIXED_DURATION,  300.000000]
+[8, ad, television 1, 0, 3, PER_HOUR,  3000.000000]
+[9, food stall, stall 1, 10, 4, PER_DAY,  10000.000000]
+[10, food stall, stall 2, 5, 4, PER_HOUR,  500.000000]
+[11, food stall, stall 3, 20, 2, PER_HOUR,  400.000000]
+[12, ad, television 2, 0, 1, PER_HOUR,  10000.000000]
+#Facilities: 10
+
+Reading GAMES: 
+[[9-5-2012],  1,  [19:30:0:0],  Giants, 24, 17]
+[[9-16-2012],  2,  [12:30:0:0],  seahawks, 7, 27]
+[[9-23-2012],  3,  [19:30:0:0],  buccaneers, 16, 10]
+[[10-1-2012],  4,  [12:30:0:0],  bears, 18, 34]
+[[10-14-2012],  6,  [19:30:0:0],  ravens, 29, 31]
+[[10-21-2012],  7,  [12:30:0:0],  panthers, 19, 14]
+[[10-28-2012],  8,  [12:30:0:0],  giants, 24, 29]
+[[11-4-2012],  9,  [19:30:0:0],  falcons, 13, 19]
+[[11-11-2012],  10,  [20:30:0:0],  eagles, 38, 23]
+[[11-18-2012],  11,  [16:25:0:0],  browns, 20, 19]
+[[11-22-2012],  12,  [16:30:0:0],  redskins, 31, 38]
+[[12-2-2012],  13,  [20:40:0:0],  eagles, 38, 33]
+[[12-9-2012],  14,  [16:25:0:0],  bengals, 20, 19]
+[[12-16-2012],  15,  [16:25:0:0],  steelers, 27, 24]
+[[12-23-2012],  16,  [13:0:0:0],  saints, 31, 34]
+[[12-30-2012],  17,  [13:0:0:0],  redskins, 18, 28]
+[[9-8-2013],  1,  [19:30:0:0],  Giants, 36, 31]
+[[9-15-2013],  2,  [12:30:0:0],  Chiefs, 16, 17]
+[[9-22-2013],  3,  [19:30:0:0],  rams, 31, 7]
+[[9-29-2013],  4,  [12:30:0:0],  Chargers, 21, 30]
+[[10-6-2013],  5,  [19:30:0:0],  Brancos, 48, 51]
+[[10-13-2013],  6,  [19:30:0:0],  redskins, 31, 16]
+[[10-20-2013],  7,  [12:30:0:0],  Eagles, 17, 3]
+[[10-27-2013],  8,  [12:30:0:0],  lions, 30, 31]
+[[11-3-2013],  9,  [19:30:0:0],  vikings, 27, 23]
+[[11-10-2013],  10,  [20:30:0:0],  saints, 0, 0]
+[[11-24-2013],  12,  [16:25:0:0],  Giants, 0, 0]
+[[11-28-2013],  13,  [16:30:0:0],  raiders, 0, 0]
+[[12-9-2013],  14,  [20:40:0:0],  BEARS, 0, 0]
+[[12-15-2013],  15,  [16:25:0:0],  packers, 0, 0]
+[[12-22-2013],  16,  [13:0:0:0],  redskins, 0, 0]
+[[12-29-2013],  17,  [13:0:0:0],  eagles, 0, 0]
+#Games: 32
+
+Read Customer info: 
+1!Joe!Thompson!01-01-1962!420 Love Lane Arlington!TX!76010!REGULAR
+{1,        Joe,   Thompson, [1-1-1962], 420 Love Lane Arlington,     TX,  76010,    REGULAR} 
+2!Joseph!richard!03-07-1987!1301 Mitchel Avenue!TX!76010!REGULAR
+{2,     Joseph,    richard, [3-7-1987],  1301 Mitchel Avenue,     TX,  76010,    REGULAR} 
+3!Subhash!Chand!11-19-1934!620 Michigan Avenue!DC!20064!GOLD
+{3,    Subhash,      Chand, [11-19-1934],  620 Michigan Avenue,     DC,  20064,       GOLD} 
+4!David!Gotcher!11-03-1984!320 East park row!DC!20098!REGULAR
+{4,      David,    Gotcher, [11-3-1984],    320 East park row,     DC,  20098,    REGULAR} 
+5!Javed!Ali!08-29-1974!120 mesquite row!TX!76013!SILVER
+{5,      Javed,        Ali, [8-29-1974],     120 mesquite row,     TX,  76013,     SILVER} 
+6!Barney!Stinson!06-13-1970!701 Washington square!NY!10012!SILVER
+{6,     Barney,    Stinson, [6-13-1970], 701 Washington square,     NY,  10012,     SILVER} 
+7!Ted!Mosby!07-18-1981!702 Washington drive!NY!10013!GOLD
+{7,        Ted,      Mosby, [7-18-1981], 702 Washington drive,     NY,  10013,       GOLD} 
+8!Charlie!Sheen!09-09-1979!1915 Davis Trail!CA!94704!REGULAR
+{8,    Charlie,      Sheen, [9-9-1979],     1915 Davis Trail,     CA,  94704,    REGULAR} 
+9!James!Pattinson!02-11-2990!176 Berkeley blvd!CA!92345!REGULAR
+{9,      James,  Pattinson, [2-11-2990],    176 Berkeley blvd,     CA,  92345,    REGULAR} 
+10!Tobi!Wan!10-11-1980!1200 Dallas Parkway!TX!76154!GOLD
+{10,       Tobi,        Wan, [10-11-1980],  1200 Dallas Parkway,     TX,  76154,       GOLD} 
+#users/customers: 10
+
+Starting Menu Processing: 
+
+//
+//COMMAND/MENU starts here
+// Tickets sold
+//menu #, sales emp id, cust id, type of tkt (IND, SEA), game id (0 for SEA), year,
+//#tkts (capacity if box), amount, box id (0 for regular)
+//chronologically according to year
+11!10!5!ind!9!2011!600!300.00!1
+10) Show the menu of project 2
+11) Accept ticket sales info
+12) Accept rental info
+13) Hire a new employee
+14) Terminate an employee
+15) Compute monthly salary of an employee
+16) Compute length of service
+17) Revenue computation
+18) Facility report
+19) Sort Game
+0) Exit program
+19) Sort Game
+{10, 5, ind, 9, 2011, 600, 300.000000, 1} 
+The total number of tickets sold up to this point is 600
+600 tickets were sold for the year 2011
+600 tickets were sold for ind
+600 tickets were sold for box id 1
+11!8!6!INd!10!2011!700!500.00!0
+{8, 6, INd, 10, 2011, 700, 500.000000, 0} 
+The total number of tickets sold up to this point is 1300
+1300 tickets were sold for the year 2011
+700 tickets were sold for INd
+700 tickets were sold for box id 0
+11!10!8!Ind!10!2011!0!5000.0!2
+{10, 8, Ind, 10, 2011, 0, 5000.000000, 2} 
+The total number of tickets sold up to this point is 1300
+1300 tickets were sold for the year 2011
+0 tickets were sold for Ind
+0 tickets were sold for box id 2
+11!8!7!SEA!0!2011!100!4000.00!2
+{8, 7, SEA, 0, 2011, 100, 4000.000000, 2} 
+The total number of tickets sold up to this point is 1400
+1400 tickets were sold for the year 2011
+100 tickets were sold for SEA
+100 tickets were sold for box id 2
+11!10!3!ind!4!2012!500!400.00!0
+{10, 3, ind, 4, 2012, 500, 400.000000, 0} 
+The total number of tickets sold up to this point is 1900
+500 tickets were sold for the year 2012
+1100 tickets were sold for ind
+1200 tickets were sold for box id 0
+11!8!1!IND!1!2012!100!500.00!0
+{8, 1, IND, 1, 2012, 100, 500.000000, 0} 
+The total number of tickets sold up to this point is 2000
+600 tickets were sold for the year 2012
+100 tickets were sold for IND
+1300 tickets were sold for box id 0
+11!8!3!IND!6!2012!100!200.00!0
+{8, 3, IND, 6, 2012, 100, 200.000000, 0} 
+The total number of tickets sold up to this point is 2100
+700 tickets were sold for the year 2012
+200 tickets were sold for IND
+1400 tickets were sold for box id 0
+11!10!9!Ind!4!2012!0!5000.0!2
+{10, 9, Ind, 4, 2012, 0, 5000.000000, 2} 
+The total number of tickets sold up to this point is 2100
+700 tickets were sold for the year 2012
+0 tickets were sold for Ind
+100 tickets were sold for box id 2
+11!8!4!SEA!0!2012!100!4000.00!2
+{8, 4, SEA, 0, 2012, 100, 4000.000000, 2} 
+The total number of tickets sold up to this point is 2200
+800 tickets were sold for the year 2012
+200 tickets were sold for SEA
+200 tickets were sold for box id 2
+11!9!2!SEA!0!2013!100!5000.00!1
+{9, 2, SEA, 0, 2013, 100, 5000.000000, 1} 
+The total number of tickets sold up to this point is 2300
+100 tickets were sold for the year 2013
+300 tickets were sold for SEA
+700 tickets were sold for box id 1
+11!8!5!IND!3!2013!300!750.00!2
+{8, 5, IND, 3, 2013, 300, 750.000000, 2} 
+The total number of tickets sold up to this point is 2600
+400 tickets were sold for the year 2013
+500 tickets were sold for IND
+500 tickets were sold for box id 2
+11!9!6!IND!2!2013!50!500.00!1
+{9, 6, IND, 2, 2013, 50, 500.000000, 1} 
+The total number of tickets sold up to this point is 2650
+450 tickets were sold for the year 2013
+550 tickets were sold for IND
+750 tickets were sold for box id 1
+11!9!7!IND!5!2013!200!400.00!0
+{9, 7, IND, 5, 2013, 200, 400.000000, 0} 
+The total number of tickets sold up to this point is 2850
+650 tickets were sold for the year 2013
+750 tickets were sold for IND
+1600 tickets were sold for box id 0
+11!10!10!SEA!0!2013!0!50000.0!1
+{10, 10, SEA, 0, 2013, 0, 50000.000000, 1} 
+The total number of tickets sold up to this point is 2850
+650 tickets were sold for the year 2013
+300 tickets were sold for SEA
+750 tickets were sold for box id 1
+11!9!7!IND!8!2013!200!400.00!0
+{9, 7, IND, 8, 2013, 200, 400.000000, 0} 
+The total number of tickets sold up to this point is 3050
+850 tickets were sold for the year 2013
+950 tickets were sold for IND
+1800 tickets were sold for box id 0
+11!10!10!iNd!9!2013!100!500.0!1
+{10, 10, iNd, 9, 2013, 100, 500.000000, 1} 
+The total number of tickets sold up to this point is 3150
+950 tickets were sold for the year 2013
+100 tickets were sold for iNd
+850 tickets were sold for box id 1
+//rental details; 1 line per rent of the facility
+//menu #, sales emp id, cust id, fac name, Date, #people using (need to be less than max allowed) 0 if stall,
+//days/hours depending on the facility
+//chronologically by date
+12!8!4!stall 2!10-01-2011!0!1
+{    8,    4,      stall 2  [10-1-2011], 0, 1} 
+Employee ID: 8   Customer ID: 4   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 1 
+
+12!8!7!stall 2!10-01-2011!0!5
+{    8,    7,      stall 2  [10-1-2011], 0, 5} 
+Employee ID: 8   Customer ID: 4   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 7   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 5 
+
+12!9!2!television 2!01-01-2011!0!3
+{    9,    2, television 2   [1-1-2011], 0, 3} 
+Employee ID: 8   Customer ID: 4   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 7   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 5 
+
+Employee ID: 9   Customer ID: 2   Facility: television 2 Date: [1-1-2011]   People: 0      Hours: 3 
+
+12!10!9!cowboys stadium!01-17-2011!80000!1
+{   10,    9, cowboys stadium  [1-17-2011], 80000, 1} 
+Employee ID: 8   Customer ID: 4   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 7   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 5 
+
+Employee ID: 9   Customer ID: 2   Facility: television 2 Date: [1-1-2011]   People: 0      Hours: 3 
+
+Employee ID: 10  Customer ID: 9   Facility: cowboys stadium Date: [1-17-2011]  People: 80000  Hours: 1 
+
+12!10!8!tour i!02-09-2011!1!0
+{   10,    8,       tour i   [2-9-2011], 1, 0} 
+Employee ID: 8   Customer ID: 4   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 7   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 5 
+
+Employee ID: 9   Customer ID: 2   Facility: television 2 Date: [1-1-2011]   People: 0      Hours: 3 
+
+Employee ID: 10  Customer ID: 9   Facility: cowboys stadium Date: [1-17-2011]  People: 80000  Hours: 1 
+
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+12!10!3!tour i!02-9-2011!1!0
+{   10,    3,       tour i   [2-9-2011], 1, 0} 
+Employee ID: 8   Customer ID: 4   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 7   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 5 
+
+Employee ID: 9   Customer ID: 2   Facility: television 2 Date: [1-1-2011]   People: 0      Hours: 3 
+
+Employee ID: 10  Customer ID: 9   Facility: cowboys stadium Date: [1-17-2011]  People: 80000  Hours: 1 
+
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+12!10!8!tour i!05-19-2011!1!0
+{   10,    8,       tour i  [5-19-2011], 1, 0} 
+Employee ID: 8   Customer ID: 4   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 7   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 5 
+
+Employee ID: 9   Customer ID: 2   Facility: television 2 Date: [1-1-2011]   People: 0      Hours: 3 
+
+Employee ID: 10  Customer ID: 9   Facility: cowboys stadium Date: [1-17-2011]  People: 80000  Hours: 1 
+
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+
+12!10!3!tour i!05-19-2011!1!0
+{   10,    3,       tour i  [5-19-2011], 1, 0} 
+Employee ID: 8   Customer ID: 4   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 7   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 5 
+
+Employee ID: 9   Customer ID: 2   Facility: television 2 Date: [1-1-2011]   People: 0      Hours: 3 
+
+Employee ID: 10  Customer ID: 9   Facility: cowboys stadium Date: [1-17-2011]  People: 80000  Hours: 1 
+
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+
+12!10!3!tour g!08-08-2011!15!0
+{   10,    3,       tour g   [8-8-2011], 15, 0} 
+Employee ID: 8   Customer ID: 4   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 7   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 5 
+
+Employee ID: 9   Customer ID: 2   Facility: television 2 Date: [1-1-2011]   People: 0      Hours: 3 
+
+Employee ID: 10  Customer ID: 9   Facility: cowboys stadium Date: [1-17-2011]  People: 80000  Hours: 1 
+
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [8-8-2011]   People: 15     Hours: 0 
+
+12!10!3!tour g!09-08-2011!15!0
+{   10,    3,       tour g   [9-8-2011], 15, 0} 
+Employee ID: 8   Customer ID: 4   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 7   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 5 
+
+Employee ID: 9   Customer ID: 2   Facility: television 2 Date: [1-1-2011]   People: 0      Hours: 3 
+
+Employee ID: 10  Customer ID: 9   Facility: cowboys stadium Date: [1-17-2011]  People: 80000  Hours: 1 
+
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [8-8-2011]   People: 15     Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [9-8-2011]   People: 15     Hours: 0 
+
+12!10!3!tour g!10-08-2011!15!0
+{   10,    3,       tour g  [10-8-2011], 15, 0} 
+Employee ID: 8   Customer ID: 4   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 7   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 5 
+
+Employee ID: 9   Customer ID: 2   Facility: television 2 Date: [1-1-2011]   People: 0      Hours: 3 
+
+Employee ID: 10  Customer ID: 9   Facility: cowboys stadium Date: [1-17-2011]  People: 80000  Hours: 1 
+
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [8-8-2011]   People: 15     Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [9-8-2011]   People: 15     Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [10-8-2011]  People: 15     Hours: 0 
+
+12!9!3!cowboys stadium!08-15-2011!90000!1
+{    9,    3, cowboys stadium  [8-15-2011], 90000, 1} 
+Employee ID: 8   Customer ID: 4   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 7   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 5 
+
+Employee ID: 9   Customer ID: 2   Facility: television 2 Date: [1-1-2011]   People: 0      Hours: 3 
+
+Employee ID: 10  Customer ID: 9   Facility: cowboys stadium Date: [1-17-2011]  People: 80000  Hours: 1 
+
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [8-8-2011]   People: 15     Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [9-8-2011]   People: 15     Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [10-8-2011]  People: 15     Hours: 0 
+
+Employee ID: 9   Customer ID: 3   Facility: cowboys stadium Date: [8-15-2011]  People: 90000  Hours: 1 
+
+12!9!1!cowboys stadium!08-07-2012!90000!1
+{    9,    1, cowboys stadium   [8-7-2012], 90000, 1} 
+Employee ID: 8   Customer ID: 4   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 7   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 5 
+
+Employee ID: 9   Customer ID: 2   Facility: television 2 Date: [1-1-2011]   People: 0      Hours: 3 
+
+Employee ID: 10  Customer ID: 9   Facility: cowboys stadium Date: [1-17-2011]  People: 80000  Hours: 1 
+
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [8-8-2011]   People: 15     Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [9-8-2011]   People: 15     Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [10-8-2011]  People: 15     Hours: 0 
+
+Employee ID: 9   Customer ID: 3   Facility: cowboys stadium Date: [8-15-2011]  People: 90000  Hours: 1 
+
+Employee ID: 9   Customer ID: 1   Facility: cowboys stadium Date: [8-7-2012]   People: 90000  Hours: 1 
+
+12!10!3!tour i!10-09-2012!1!0
+{   10,    3,       tour i  [10-9-2012], 1, 0} 
+Employee ID: 8   Customer ID: 4   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 7   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 5 
+
+Employee ID: 9   Customer ID: 2   Facility: television 2 Date: [1-1-2011]   People: 0      Hours: 3 
+
+Employee ID: 10  Customer ID: 9   Facility: cowboys stadium Date: [1-17-2011]  People: 80000  Hours: 1 
+
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [8-8-2011]   People: 15     Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [9-8-2011]   People: 15     Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [10-8-2011]  People: 15     Hours: 0 
+
+Employee ID: 9   Customer ID: 3   Facility: cowboys stadium Date: [8-15-2011]  People: 90000  Hours: 1 
+
+Employee ID: 9   Customer ID: 1   Facility: cowboys stadium Date: [8-7-2012]   People: 90000  Hours: 1 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [10-9-2012]  People: 1      Hours: 0 
+
+12!8!8!stall 3!11-01-2012!0!1
+{    8,    8,      stall 3  [11-1-2012], 0, 1} 
+Employee ID: 8   Customer ID: 4   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 7   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 5 
+
+Employee ID: 9   Customer ID: 2   Facility: television 2 Date: [1-1-2011]   People: 0      Hours: 3 
+
+Employee ID: 10  Customer ID: 9   Facility: cowboys stadium Date: [1-17-2011]  People: 80000  Hours: 1 
+
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [8-8-2011]   People: 15     Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [9-8-2011]   People: 15     Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [10-8-2011]  People: 15     Hours: 0 
+
+Employee ID: 9   Customer ID: 3   Facility: cowboys stadium Date: [8-15-2011]  People: 90000  Hours: 1 
+
+Employee ID: 9   Customer ID: 1   Facility: cowboys stadium Date: [8-7-2012]   People: 90000  Hours: 1 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [10-9-2012]  People: 1      Hours: 0 
+
+Employee ID: 8   Customer ID: 8   Facility: stall 3     Date: [11-1-2012]  People: 0      Hours: 1 
+
+12!8!9!stall 3!12-04-2012!0!2
+{    8,    9,      stall 3  [12-4-2012], 0, 2} 
+Employee ID: 8   Customer ID: 4   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 7   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 5 
+
+Employee ID: 9   Customer ID: 2   Facility: television 2 Date: [1-1-2011]   People: 0      Hours: 3 
+
+Employee ID: 10  Customer ID: 9   Facility: cowboys stadium Date: [1-17-2011]  People: 80000  Hours: 1 
+
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [8-8-2011]   People: 15     Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [9-8-2011]   People: 15     Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [10-8-2011]  People: 15     Hours: 0 
+
+Employee ID: 9   Customer ID: 3   Facility: cowboys stadium Date: [8-15-2011]  People: 90000  Hours: 1 
+
+Employee ID: 9   Customer ID: 1   Facility: cowboys stadium Date: [8-7-2012]   People: 90000  Hours: 1 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [10-9-2012]  People: 1      Hours: 0 
+
+Employee ID: 8   Customer ID: 8   Facility: stall 3     Date: [11-1-2012]  People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 9   Facility: stall 3     Date: [12-4-2012]  People: 0      Hours: 2 
+
+12!8!8!stall 1!03-04-2013!0!1
+{    8,    8,      stall 1   [3-4-2013], 0, 1} 
+Employee ID: 8   Customer ID: 4   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 7   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 5 
+
+Employee ID: 9   Customer ID: 2   Facility: television 2 Date: [1-1-2011]   People: 0      Hours: 3 
+
+Employee ID: 10  Customer ID: 9   Facility: cowboys stadium Date: [1-17-2011]  People: 80000  Hours: 1 
+
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [8-8-2011]   People: 15     Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [9-8-2011]   People: 15     Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [10-8-2011]  People: 15     Hours: 0 
+
+Employee ID: 9   Customer ID: 3   Facility: cowboys stadium Date: [8-15-2011]  People: 90000  Hours: 1 
+
+Employee ID: 9   Customer ID: 1   Facility: cowboys stadium Date: [8-7-2012]   People: 90000  Hours: 1 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [10-9-2012]  People: 1      Hours: 0 
+
+Employee ID: 8   Customer ID: 8   Facility: stall 3     Date: [11-1-2012]  People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 9   Facility: stall 3     Date: [12-4-2012]  People: 0      Hours: 2 
+
+Employee ID: 8   Customer ID: 8   Facility: stall 1     Date: [3-4-2013]   People: 0      Hours: 1 
+
+12!8!10!cowboys stadium!07-09-2013!90000!1
+{    8,   10, cowboys stadium   [7-9-2013], 90000, 1} 
+Employee ID: 8   Customer ID: 4   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 7   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 5 
+
+Employee ID: 9   Customer ID: 2   Facility: television 2 Date: [1-1-2011]   People: 0      Hours: 3 
+
+Employee ID: 10  Customer ID: 9   Facility: cowboys stadium Date: [1-17-2011]  People: 80000  Hours: 1 
+
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [8-8-2011]   People: 15     Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [9-8-2011]   People: 15     Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [10-8-2011]  People: 15     Hours: 0 
+
+Employee ID: 9   Customer ID: 3   Facility: cowboys stadium Date: [8-15-2011]  People: 90000  Hours: 1 
+
+Employee ID: 9   Customer ID: 1   Facility: cowboys stadium Date: [8-7-2012]   People: 90000  Hours: 1 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [10-9-2012]  People: 1      Hours: 0 
+
+Employee ID: 8   Customer ID: 8   Facility: stall 3     Date: [11-1-2012]  People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 9   Facility: stall 3     Date: [12-4-2012]  People: 0      Hours: 2 
+
+Employee ID: 8   Customer ID: 8   Facility: stall 1     Date: [3-4-2013]   People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 10  Facility: cowboys stadium Date: [7-9-2013]   People: 90000  Hours: 1 
+
+12!8!1!cowboys stadium!07-19-2013!90000!1
+{    8,    1, cowboys stadium  [7-19-2013], 90000, 1} 
+Employee ID: 8   Customer ID: 4   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 7   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 5 
+
+Employee ID: 9   Customer ID: 2   Facility: television 2 Date: [1-1-2011]   People: 0      Hours: 3 
+
+Employee ID: 10  Customer ID: 9   Facility: cowboys stadium Date: [1-17-2011]  People: 80000  Hours: 1 
+
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [8-8-2011]   People: 15     Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [9-8-2011]   People: 15     Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [10-8-2011]  People: 15     Hours: 0 
+
+Employee ID: 9   Customer ID: 3   Facility: cowboys stadium Date: [8-15-2011]  People: 90000  Hours: 1 
+
+Employee ID: 9   Customer ID: 1   Facility: cowboys stadium Date: [8-7-2012]   People: 90000  Hours: 1 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [10-9-2012]  People: 1      Hours: 0 
+
+Employee ID: 8   Customer ID: 8   Facility: stall 3     Date: [11-1-2012]  People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 9   Facility: stall 3     Date: [12-4-2012]  People: 0      Hours: 2 
+
+Employee ID: 8   Customer ID: 8   Facility: stall 1     Date: [3-4-2013]   People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 10  Facility: cowboys stadium Date: [7-9-2013]   People: 90000  Hours: 1 
+
+Employee ID: 8   Customer ID: 1   Facility: cowboys stadium Date: [7-19-2013]  People: 90000  Hours: 1 
+
+12!9!6!venue 2!08-06-2013!25!5
+{    9,    6,      venue 2   [8-6-2013], 25, 5} 
+Employee ID: 8   Customer ID: 4   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 7   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 5 
+
+Employee ID: 9   Customer ID: 2   Facility: television 2 Date: [1-1-2011]   People: 0      Hours: 3 
+
+Employee ID: 10  Customer ID: 9   Facility: cowboys stadium Date: [1-17-2011]  People: 80000  Hours: 1 
+
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [8-8-2011]   People: 15     Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [9-8-2011]   People: 15     Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [10-8-2011]  People: 15     Hours: 0 
+
+Employee ID: 9   Customer ID: 3   Facility: cowboys stadium Date: [8-15-2011]  People: 90000  Hours: 1 
+
+Employee ID: 9   Customer ID: 1   Facility: cowboys stadium Date: [8-7-2012]   People: 90000  Hours: 1 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [10-9-2012]  People: 1      Hours: 0 
+
+Employee ID: 8   Customer ID: 8   Facility: stall 3     Date: [11-1-2012]  People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 9   Facility: stall 3     Date: [12-4-2012]  People: 0      Hours: 2 
+
+Employee ID: 8   Customer ID: 8   Facility: stall 1     Date: [3-4-2013]   People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 10  Facility: cowboys stadium Date: [7-9-2013]   People: 90000  Hours: 1 
+
+Employee ID: 8   Customer ID: 1   Facility: cowboys stadium Date: [7-19-2013]  People: 90000  Hours: 1 
+
+Employee ID: 9   Customer ID: 6   Facility: venue 2     Date: [8-6-2013]   People: 25     Hours: 5 
+
+12!10!3!tour g!08-08-2013!50!0
+{   10,    3,       tour g   [8-8-2013], 50, 0} 
+Employee ID: 8   Customer ID: 4   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 7   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 5 
+
+Employee ID: 9   Customer ID: 2   Facility: television 2 Date: [1-1-2011]   People: 0      Hours: 3 
+
+Employee ID: 10  Customer ID: 9   Facility: cowboys stadium Date: [1-17-2011]  People: 80000  Hours: 1 
+
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [8-8-2011]   People: 15     Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [9-8-2011]   People: 15     Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [10-8-2011]  People: 15     Hours: 0 
+
+Employee ID: 9   Customer ID: 3   Facility: cowboys stadium Date: [8-15-2011]  People: 90000  Hours: 1 
+
+Employee ID: 9   Customer ID: 1   Facility: cowboys stadium Date: [8-7-2012]   People: 90000  Hours: 1 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [10-9-2012]  People: 1      Hours: 0 
+
+Employee ID: 8   Customer ID: 8   Facility: stall 3     Date: [11-1-2012]  People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 9   Facility: stall 3     Date: [12-4-2012]  People: 0      Hours: 2 
+
+Employee ID: 8   Customer ID: 8   Facility: stall 1     Date: [3-4-2013]   People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 10  Facility: cowboys stadium Date: [7-9-2013]   People: 90000  Hours: 1 
+
+Employee ID: 8   Customer ID: 1   Facility: cowboys stadium Date: [7-19-2013]  People: 90000  Hours: 1 
+
+Employee ID: 9   Customer ID: 6   Facility: venue 2     Date: [8-6-2013]   People: 25     Hours: 5 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [8-8-2013]   People: 50     Hours: 0 
+
+12!8!9!television 1!08-31-2013!0!4
+{    8,    9, television 1  [8-31-2013], 0, 4} 
+Employee ID: 8   Customer ID: 4   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 7   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 5 
+
+Employee ID: 9   Customer ID: 2   Facility: television 2 Date: [1-1-2011]   People: 0      Hours: 3 
+
+Employee ID: 10  Customer ID: 9   Facility: cowboys stadium Date: [1-17-2011]  People: 80000  Hours: 1 
+
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [8-8-2011]   People: 15     Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [9-8-2011]   People: 15     Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [10-8-2011]  People: 15     Hours: 0 
+
+Employee ID: 9   Customer ID: 3   Facility: cowboys stadium Date: [8-15-2011]  People: 90000  Hours: 1 
+
+Employee ID: 9   Customer ID: 1   Facility: cowboys stadium Date: [8-7-2012]   People: 90000  Hours: 1 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [10-9-2012]  People: 1      Hours: 0 
+
+Employee ID: 8   Customer ID: 8   Facility: stall 3     Date: [11-1-2012]  People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 9   Facility: stall 3     Date: [12-4-2012]  People: 0      Hours: 2 
+
+Employee ID: 8   Customer ID: 8   Facility: stall 1     Date: [3-4-2013]   People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 10  Facility: cowboys stadium Date: [7-9-2013]   People: 90000  Hours: 1 
+
+Employee ID: 8   Customer ID: 1   Facility: cowboys stadium Date: [7-19-2013]  People: 90000  Hours: 1 
+
+Employee ID: 9   Customer ID: 6   Facility: venue 2     Date: [8-6-2013]   People: 25     Hours: 5 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [8-8-2013]   People: 50     Hours: 0 
+
+Employee ID: 8   Customer ID: 9   Facility: television 1 Date: [8-31-2013]  People: 0      Hours: 4 
+
+12!9!7!venue 2!09-09-2013!50!3
+{    9,    7,      venue 2   [9-9-2013], 50, 3} 
+Employee ID: 8   Customer ID: 4   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 7   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 5 
+
+Employee ID: 9   Customer ID: 2   Facility: television 2 Date: [1-1-2011]   People: 0      Hours: 3 
+
+Employee ID: 10  Customer ID: 9   Facility: cowboys stadium Date: [1-17-2011]  People: 80000  Hours: 1 
+
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [8-8-2011]   People: 15     Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [9-8-2011]   People: 15     Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [10-8-2011]  People: 15     Hours: 0 
+
+Employee ID: 9   Customer ID: 3   Facility: cowboys stadium Date: [8-15-2011]  People: 90000  Hours: 1 
+
+Employee ID: 9   Customer ID: 1   Facility: cowboys stadium Date: [8-7-2012]   People: 90000  Hours: 1 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [10-9-2012]  People: 1      Hours: 0 
+
+Employee ID: 8   Customer ID: 8   Facility: stall 3     Date: [11-1-2012]  People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 9   Facility: stall 3     Date: [12-4-2012]  People: 0      Hours: 2 
+
+Employee ID: 8   Customer ID: 8   Facility: stall 1     Date: [3-4-2013]   People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 10  Facility: cowboys stadium Date: [7-9-2013]   People: 90000  Hours: 1 
+
+Employee ID: 8   Customer ID: 1   Facility: cowboys stadium Date: [7-19-2013]  People: 90000  Hours: 1 
+
+Employee ID: 9   Customer ID: 6   Facility: venue 2     Date: [8-6-2013]   People: 25     Hours: 5 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [8-8-2013]   People: 50     Hours: 0 
+
+Employee ID: 8   Customer ID: 9   Facility: television 1 Date: [8-31-2013]  People: 0      Hours: 4 
+
+Employee ID: 9   Customer ID: 7   Facility: venue 2     Date: [9-9-2013]   People: 50     Hours: 3 
+
+12!8!3!television 2!09-11-2013!0!3
+{    8,    3, television 2  [9-11-2013], 0, 3} 
+Employee ID: 8   Customer ID: 4   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 7   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 5 
+
+Employee ID: 9   Customer ID: 2   Facility: television 2 Date: [1-1-2011]   People: 0      Hours: 3 
+
+Employee ID: 10  Customer ID: 9   Facility: cowboys stadium Date: [1-17-2011]  People: 80000  Hours: 1 
+
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [8-8-2011]   People: 15     Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [9-8-2011]   People: 15     Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [10-8-2011]  People: 15     Hours: 0 
+
+Employee ID: 9   Customer ID: 3   Facility: cowboys stadium Date: [8-15-2011]  People: 90000  Hours: 1 
+
+Employee ID: 9   Customer ID: 1   Facility: cowboys stadium Date: [8-7-2012]   People: 90000  Hours: 1 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [10-9-2012]  People: 1      Hours: 0 
+
+Employee ID: 8   Customer ID: 8   Facility: stall 3     Date: [11-1-2012]  People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 9   Facility: stall 3     Date: [12-4-2012]  People: 0      Hours: 2 
+
+Employee ID: 8   Customer ID: 8   Facility: stall 1     Date: [3-4-2013]   People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 10  Facility: cowboys stadium Date: [7-9-2013]   People: 90000  Hours: 1 
+
+Employee ID: 8   Customer ID: 1   Facility: cowboys stadium Date: [7-19-2013]  People: 90000  Hours: 1 
+
+Employee ID: 9   Customer ID: 6   Facility: venue 2     Date: [8-6-2013]   People: 25     Hours: 5 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [8-8-2013]   People: 50     Hours: 0 
+
+Employee ID: 8   Customer ID: 9   Facility: television 1 Date: [8-31-2013]  People: 0      Hours: 4 
+
+Employee ID: 9   Customer ID: 7   Facility: venue 2     Date: [9-9-2013]   People: 50     Hours: 3 
+
+Employee ID: 8   Customer ID: 3   Facility: television 2 Date: [9-11-2013]  People: 0      Hours: 3 
+
+12!8!4!stall 2!11-01-2013!0!1
+{    8,    4,      stall 2  [11-1-2013], 0, 1} 
+Employee ID: 8   Customer ID: 4   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 7   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 5 
+
+Employee ID: 9   Customer ID: 2   Facility: television 2 Date: [1-1-2011]   People: 0      Hours: 3 
+
+Employee ID: 10  Customer ID: 9   Facility: cowboys stadium Date: [1-17-2011]  People: 80000  Hours: 1 
+
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [8-8-2011]   People: 15     Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [9-8-2011]   People: 15     Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [10-8-2011]  People: 15     Hours: 0 
+
+Employee ID: 9   Customer ID: 3   Facility: cowboys stadium Date: [8-15-2011]  People: 90000  Hours: 1 
+
+Employee ID: 9   Customer ID: 1   Facility: cowboys stadium Date: [8-7-2012]   People: 90000  Hours: 1 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [10-9-2012]  People: 1      Hours: 0 
+
+Employee ID: 8   Customer ID: 8   Facility: stall 3     Date: [11-1-2012]  People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 9   Facility: stall 3     Date: [12-4-2012]  People: 0      Hours: 2 
+
+Employee ID: 8   Customer ID: 8   Facility: stall 1     Date: [3-4-2013]   People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 10  Facility: cowboys stadium Date: [7-9-2013]   People: 90000  Hours: 1 
+
+Employee ID: 8   Customer ID: 1   Facility: cowboys stadium Date: [7-19-2013]  People: 90000  Hours: 1 
+
+Employee ID: 9   Customer ID: 6   Facility: venue 2     Date: [8-6-2013]   People: 25     Hours: 5 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [8-8-2013]   People: 50     Hours: 0 
+
+Employee ID: 8   Customer ID: 9   Facility: television 1 Date: [8-31-2013]  People: 0      Hours: 4 
+
+Employee ID: 9   Customer ID: 7   Facility: venue 2     Date: [9-9-2013]   People: 50     Hours: 3 
+
+Employee ID: 8   Customer ID: 3   Facility: television 2 Date: [9-11-2013]  People: 0      Hours: 3 
+
+Employee ID: 8   Customer ID: 4   Facility: stall 2     Date: [11-1-2013]  People: 0      Hours: 1 
+
+12!8!7!stall 2!12-04-2013!0!2
+{    8,    7,      stall 2  [12-4-2013], 0, 2} 
+Employee ID: 8   Customer ID: 4   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 7   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 5 
+
+Employee ID: 9   Customer ID: 2   Facility: television 2 Date: [1-1-2011]   People: 0      Hours: 3 
+
+Employee ID: 10  Customer ID: 9   Facility: cowboys stadium Date: [1-17-2011]  People: 80000  Hours: 1 
+
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [8-8-2011]   People: 15     Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [9-8-2011]   People: 15     Hours: 0 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [10-8-2011]  People: 15     Hours: 0 
+
+Employee ID: 9   Customer ID: 3   Facility: cowboys stadium Date: [8-15-2011]  People: 90000  Hours: 1 
+
+Employee ID: 9   Customer ID: 1   Facility: cowboys stadium Date: [8-7-2012]   People: 90000  Hours: 1 
+
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [10-9-2012]  People: 1      Hours: 0 
+
+Employee ID: 8   Customer ID: 8   Facility: stall 3     Date: [11-1-2012]  People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 9   Facility: stall 3     Date: [12-4-2012]  People: 0      Hours: 2 
+
+Employee ID: 8   Customer ID: 8   Facility: stall 1     Date: [3-4-2013]   People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 10  Facility: cowboys stadium Date: [7-9-2013]   People: 90000  Hours: 1 
+
+Employee ID: 8   Customer ID: 1   Facility: cowboys stadium Date: [7-19-2013]  People: 90000  Hours: 1 
+
+Employee ID: 9   Customer ID: 6   Facility: venue 2     Date: [8-6-2013]   People: 25     Hours: 5 
+
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [8-8-2013]   People: 50     Hours: 0 
+
+Employee ID: 8   Customer ID: 9   Facility: television 1 Date: [8-31-2013]  People: 0      Hours: 4 
+
+Employee ID: 9   Customer ID: 7   Facility: venue 2     Date: [9-9-2013]   People: 50     Hours: 3 
+
+Employee ID: 8   Customer ID: 3   Facility: television 2 Date: [9-11-2013]  People: 0      Hours: 3 
+
+Employee ID: 8   Customer ID: 4   Facility: stall 2     Date: [11-1-2013]  People: 0      Hours: 1 
+
+Employee ID: 8   Customer ID: 7   Facility: stall 2     Date: [12-4-2013]  People: 0      Hours: 2 
+
+13!MNTR!leslie!ruth!08-13-1986!female!10-24-2009!1000.00!9.50
+11   leslie     ruth       [8-13-1986]  female   [10-24-2009] null        age: 27   length of service: 4
+
+13!MNTR!yang!sun!09-29-1967!male!12-01-2009!790.00!32.5
+12   yang       sun        [9-29-1967]  male     [12-1-2009]  null        age: 46   length of service: 4
+
+13!WD!shawn!spencer!07-01-1987!male!10-09-2006!1500.00!40.00
+13   shawn      spencer    [7-1-1987]   male     [10-9-2006]  null         age: 26   length of service: 7
+
+13!SEC!burton!guster!03-11-1988!male!04-07-2007!1300.00!120.00
+14   burton     guster     [3-11-1988]  male     [4-7-2007]   null        age: 25   length of service: 6
+
+13!SALES!maggie!lawson!12-10-1986!female!04-07-2008!1800.00!0.05
+15   maggie     lawson     [12-10-1986] female   [4-7-2008]   null        age: 27   length of service: 5
+
+14!5!12-31-2013
+ID  First Name Last Name  Release Date
+1   katy       dough      null         
+2   Jennifer   Butter     [11-9-2013]  
+3   sara       Longbottom null         
+4   dave       richardson [10-9-2013]  
+5   sarah      connor     [12-31-2013] 
+6   john       smith      null         
+7   jennifer   longhorn   [7-4-2012]   
+8   james      bond       null         
+9   anne       haathaway  null         
+10  marie      hales      null         
+11  leslie     ruth       null         
+12  yang       sun        null         
+13  shawn      spencer    null         
+14  burton     guster     null         
+15  maggie     lawson     null         
+14!1!*
+ID  First Name Last Name  Release Date
+1   katy       dough      [12-4-2013]  
+2   Jennifer   Butter     [11-9-2013]  
+3   sara       Longbottom null         
+4   dave       richardson [10-9-2013]  
+5   sarah      connor     [12-31-2013] 
+6   john       smith      null         
+7   jennifer   longhorn   [7-4-2012]   
+8   james      bond       null         
+9   anne       haathaway  null         
+10  marie      hales      null         
+11  leslie     ruth       null         
+12  yang       sun        null         
+13  shawn      spencer    null         
+14  burton     guster     null         
+15  maggie     lawson     null         
+14!12!11-11-2011
+ID  First Name Last Name  Release Date
+1   katy       dough      [12-4-2013]  
+2   Jennifer   Butter     [11-9-2013]  
+3   sara       Longbottom null         
+4   dave       richardson [10-9-2013]  
+5   sarah      connor     [12-31-2013] 
+6   john       smith      null         
+7   jennifer   longhorn   [7-4-2012]   
+8   james      bond       null         
+9   anne       haathaway  null         
+10  marie      hales      null         
+11  leslie     ruth       null         
+12  yang       sun        [11-11-2011] 
+13  shawn      spencer    null         
+14  burton     guster     null         
+15  maggie     lawson     null         
+14!13!01-01-2012
+ID  First Name Last Name  Release Date
+1   katy       dough      [12-4-2013]  
+2   Jennifer   Butter     [11-9-2013]  
+3   sara       Longbottom null         
+4   dave       richardson [10-9-2013]  
+5   sarah      connor     [12-31-2013] 
+6   john       smith      null         
+7   jennifer   longhorn   [7-4-2012]   
+8   james      bond       null         
+9   anne       haathaway  null         
+10  marie      hales      null         
+11  leslie     ruth       null         
+12  yang       sun        [11-11-2011] 
+13  shawn      spencer    [1-1-2012]   
+14  burton     guster     null         
+15  maggie     lawson     null         
+14!25!*
+ID  First Name Last Name  Release Date
+1   katy       dough      [12-4-2013]  
+2   Jennifer   Butter     [11-9-2013]  
+3   sara       Longbottom null         
+4   dave       richardson [10-9-2013]  
+5   sarah      connor     [12-31-2013] 
+6   john       smith      null         
+7   jennifer   longhorn   [7-4-2012]   
+8   james      bond       null         
+9   anne       haathaway  null         
+10  marie      hales      null         
+11  leslie     ruth       null         
+12  yang       sun        [11-11-2011] 
+13  shawn      spencer    [1-1-2012]   
+14  burton     guster     null         
+15  maggie     lawson     null         
+15!1!200!1
+1   Web Designer     katy        dough       female 1   9500.00
+15!2!60!1
+2   Web Designer     Jennifer    Butter      female 1   4000.00
+15!3!50!2
+3   Maintainer       sara        Longbottom  male   2   4550.00
+15!6!160!3
+6   Security         john        smith       male   3   20500.00
+15!7!200!4
+7   Security         jennifer    longhorn    female 4   21100.00
+15!8!20000!2
+8   Sales Executive  james       bond        male   2   1800.00
+15!9!10000!12
+9   Sales Executive  anne        haathaway   female 12  2700.00
+15!10!30000!5
+10  Sales Executive  marie       hales       female 5   5000.00
+16!5
+5    sarah      connor     [3-25-1984]  male     [7-11-2011]  [12-31-2013]age: 29   length of service: 2
+
+16!1
+1    katy       dough      [7-1-1982]   female   [11-9-2006]  [12-4-2013]  age: 31   length of service: 7
+
+16!0
+1    katy       dough      [7-1-1982]   female   [11-9-2006]  [12-4-2013]  age: 31   length of service: 7
+
+2    Jennifer   Butter     [7-2-1962]   female   [11-9-1999]  [11-9-2013]  age: 51   length of service: 14
+
+3    sara       Longbottom [11-13-1980] male     [1-2-2010]   null        age: 33   length of service: 3
+
+4    dave       richardson [4-15-1964]  male     [11-12-2005] [10-9-2013] age: 49   length of service: 8
+
+5    sarah      connor     [3-25-1984]  male     [7-11-2011]  [12-31-2013]age: 29   length of service: 2
+
+6    john       smith      [4-1-1978]   male     [4-7-2007]   null        age: 35   length of service: 6
+
+7    jennifer   longhorn   [3-2-1968]   female   [4-7-2001]   [7-4-2012]  age: 45   length of service: 11
+
+8    james      bond       [12-10-1976] male     [2-20-2005]  null        age: 37   length of service: 8
+
+9    anne       haathaway  [8-13-1984]  female   [10-24-2006] null        age: 29   length of service: 7
+
+10   marie      hales      [8-31-1987]  female   [10-24-2006] null        age: 26   length of service: 7
+
+11   leslie     ruth       [8-13-1986]  female   [10-24-2009] null        age: 27   length of service: 4
+
+12   yang       sun        [9-29-1967]  male     [12-1-2009]  [11-11-2011]age: 46   length of service: 2
+
+13   shawn      spencer    [7-1-1987]   male     [10-9-2006]  [1-1-2012]   age: 26   length of service: 6
+
+14   burton     guster     [3-11-1988]  male     [4-7-2007]   null        age: 25   length of service: 6
+
+15   maggie     lawson     [12-10-1986] female   [4-7-2008]   null        age: 27   length of service: 5
+
+16!11
+11   leslie     ruth       [8-13-1986]  female   [10-24-2009] null        age: 27   length of service: 4
+
+16!8
+8    james      bond       [12-10-1976] male     [2-20-2005]  null        age: 37   length of service: 8
+
+17!ticket!2013
+17!rental!2013
+The rental revenue for the year 2013 is $293500.00
+17!ticket!2012
+17!rental!2012
+The rental revenue for the year 2012 is $101200.00
+17!ticket!2011
+17!rental!2011
+The rental revenue for the year 2011 is $233000.00
+18!2012
+date         duration revenue
+[8-7-2012]   1  $100000.00 [10-9-2012]  0  $100000.00 [11-1-2012]  1  $100400.00 [12-4-2012]  2  $101200.00 The rental revenue for the year 2012 is $101200.00
+18!2013
+date         duration revenue
+[3-4-2013]   1  $10000.00 [7-9-2013]   1  $110000.00 [7-19-2013]  1  $210000.00 [8-6-2013]   5  $235000.00 [8-8-2013]   0  $235000.00 [8-31-2013]  4  $247000.00 [9-9-2013]   3  $262000.00 [9-11-2013]  3  $292000.00 [11-1-2013]  1  $292500.00 [12-4-2013]  2  $293500.00 The rental revenue for the year 2013 is $293500.00
+18!2011
+date         duration revenue
+[10-1-2011]  1  $500.00 [10-1-2011]  5  $3000.00 [1-1-2011]   3  $33000.00 [1-17-2011]  1  $133000.00 [2-9-2011]   0  $133000.00 [2-9-2011]   0  $133000.00 [5-19-2011]  0  $133000.00 [5-19-2011]  0  $133000.00 [8-8-2011]   0  $133000.00 [9-8-2011]   0  $133000.00 [10-8-2011]  0  $133000.00 [8-15-2011]  1  $233000.00 The rental revenue for the year 2011 is $233000.00
+19!
+[Date: [12-29-2013] Game Number: 17  Time: [13:0:0:0] Visiting Team: eagles     Home Score: 0    Visiting Score: 0   
+, Date: [12-22-2013] Game Number: 16  Time: [13:0:0:0] Visiting Team: redskins   Home Score: 0    Visiting Score: 0   
+, Date: [12-15-2013] Game Number: 15  Time: [16:25:0:0] Visiting Team: packers    Home Score: 0    Visiting Score: 0   
+, Date: [12-9-2013]  Game Number: 14  Time: [20:40:0:0] Visiting Team: BEARS      Home Score: 0    Visiting Score: 0   
+, Date: [11-28-2013] Game Number: 13  Time: [16:30:0:0] Visiting Team: raiders    Home Score: 0    Visiting Score: 0   
+, Date: [11-24-2013] Game Number: 12  Time: [16:25:0:0] Visiting Team: Giants     Home Score: 0    Visiting Score: 0   
+, Date: [11-10-2013] Game Number: 10  Time: [20:30:0:0] Visiting Team: saints     Home Score: 0    Visiting Score: 0   
+, Date: [11-3-2013]  Game Number: 9   Time: [19:30:0:0] Visiting Team: vikings    Home Score: 27   Visiting Score: 23  
+, Date: [10-27-2013] Game Number: 8   Time: [12:30:0:0] Visiting Team: lions      Home Score: 30   Visiting Score: 31  
+, Date: [10-20-2013] Game Number: 7   Time: [12:30:0:0] Visiting Team: Eagles     Home Score: 17   Visiting Score: 3   
+, Date: [10-13-2013] Game Number: 6   Time: [19:30:0:0] Visiting Team: redskins   Home Score: 31   Visiting Score: 16  
+, Date: [10-6-2013]  Game Number: 5   Time: [19:30:0:0] Visiting Team: Brancos    Home Score: 48   Visiting Score: 51  
+, Date: [9-29-2013]  Game Number: 4   Time: [12:30:0:0] Visiting Team: Chargers   Home Score: 21   Visiting Score: 30  
+, Date: [9-22-2013]  Game Number: 3   Time: [19:30:0:0] Visiting Team: rams       Home Score: 31   Visiting Score: 7   
+, Date: [9-15-2013]  Game Number: 2   Time: [12:30:0:0] Visiting Team: Chiefs     Home Score: 16   Visiting Score: 17  
+, Date: [9-8-2013]   Game Number: 1   Time: [19:30:0:0] Visiting Team: Giants     Home Score: 36   Visiting Score: 31  
+, Date: [12-30-2012] Game Number: 17  Time: [13:0:0:0] Visiting Team: redskins   Home Score: 18   Visiting Score: 28  
+, Date: [12-23-2012] Game Number: 16  Time: [13:0:0:0] Visiting Team: saints     Home Score: 31   Visiting Score: 34  
+, Date: [12-16-2012] Game Number: 15  Time: [16:25:0:0] Visiting Team: steelers   Home Score: 27   Visiting Score: 24  
+, Date: [12-9-2012]  Game Number: 14  Time: [16:25:0:0] Visiting Team: bengals    Home Score: 20   Visiting Score: 19  
+, Date: [12-2-2012]  Game Number: 13  Time: [20:40:0:0] Visiting Team: eagles     Home Score: 38   Visiting Score: 33  
+, Date: [11-22-2012] Game Number: 12  Time: [16:30:0:0] Visiting Team: redskins   Home Score: 31   Visiting Score: 38  
+, Date: [11-18-2012] Game Number: 11  Time: [16:25:0:0] Visiting Team: browns     Home Score: 20   Visiting Score: 19  
+, Date: [11-11-2012] Game Number: 10  Time: [20:30:0:0] Visiting Team: eagles     Home Score: 38   Visiting Score: 23  
+, Date: [11-4-2012]  Game Number: 9   Time: [19:30:0:0] Visiting Team: falcons    Home Score: 13   Visiting Score: 19  
+, Date: [10-28-2012] Game Number: 8   Time: [12:30:0:0] Visiting Team: giants     Home Score: 24   Visiting Score: 29  
+, Date: [10-21-2012] Game Number: 7   Time: [12:30:0:0] Visiting Team: panthers   Home Score: 19   Visiting Score: 14  
+, Date: [10-14-2012] Game Number: 6   Time: [19:30:0:0] Visiting Team: ravens     Home Score: 29   Visiting Score: 31  
+, Date: [10-1-2012]  Game Number: 4   Time: [12:30:0:0] Visiting Team: bears      Home Score: 18   Visiting Score: 34  
+, Date: [9-23-2012]  Game Number: 3   Time: [19:30:0:0] Visiting Team: buccaneers Home Score: 16   Visiting Score: 10  
+, Date: [9-16-2012]  Game Number: 2   Time: [12:30:0:0] Visiting Team: seahawks   Home Score: 7    Visiting Score: 27  
+, Date: [9-5-2012]   Game Number: 1   Time: [19:30:0:0] Visiting Team: Giants     Home Score: 24   Visiting Score: 17  
+]20!*
+Employee ID: 10  Customer ID: 9   Facility: cowboys stadium Date: [1-17-2011]  People: 80000  Hours: 1 
+Employee ID: 9   Customer ID: 3   Facility: cowboys stadium Date: [8-15-2011]  People: 90000  Hours: 1 
+Employee ID: 9   Customer ID: 1   Facility: cowboys stadium Date: [8-7-2012]   People: 90000  Hours: 1 
+Employee ID: 8   Customer ID: 10  Facility: cowboys stadium Date: [7-9-2013]   People: 90000  Hours: 1 
+Employee ID: 8   Customer ID: 1   Facility: cowboys stadium Date: [7-19-2013]  People: 90000  Hours: 1 
+Employee ID: 8   Customer ID: 8   Facility: stall 1     Date: [3-4-2013]   People: 0      Hours: 1 
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [10-9-2012]  People: 1      Hours: 0 
+Employee ID: 8   Customer ID: 8   Facility: stall 3     Date: [11-1-2012]  People: 0      Hours: 1 
+Employee ID: 8   Customer ID: 9   Facility: stall 3     Date: [12-4-2012]  People: 0      Hours: 2 
+Employee ID: 8   Customer ID: 4   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 1 
+Employee ID: 8   Customer ID: 7   Facility: stall 2     Date: [10-1-2011]  People: 0      Hours: 5 
+Employee ID: 8   Customer ID: 4   Facility: stall 2     Date: [11-1-2013]  People: 0      Hours: 1 
+Employee ID: 8   Customer ID: 7   Facility: stall 2     Date: [12-4-2013]  People: 0      Hours: 2 
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [8-8-2011]   People: 15     Hours: 0 
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [9-8-2011]   People: 15     Hours: 0 
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [10-8-2011]  People: 15     Hours: 0 
+Employee ID: 10  Customer ID: 3   Facility: tour g      Date: [8-8-2013]   People: 50     Hours: 0 
+Employee ID: 8   Customer ID: 9   Facility: television 1 Date: [8-31-2013]  People: 0      Hours: 4 
+Employee ID: 9   Customer ID: 2   Facility: television 2 Date: [1-1-2011]   People: 0      Hours: 3 
+Employee ID: 8   Customer ID: 3   Facility: television 2 Date: [9-11-2013]  People: 0      Hours: 3 
+Employee ID: 9   Customer ID: 6   Facility: venue 2     Date: [8-6-2013]   People: 25     Hours: 5 
+Employee ID: 9   Customer ID: 7   Facility: venue 2     Date: [9-9-2013]   People: 50     Hours: 3 
+20!Tour    g
+Tour    g does not exist.
+20!tour i
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [2-9-2011]   People: 1      Hours: 0 
+Employee ID: 10  Customer ID: 8   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [5-19-2011]  People: 1      Hours: 0 
+Employee ID: 10  Customer ID: 3   Facility: tour i      Date: [10-9-2012]  People: 1      Hours: 0 
+20!stall    2
+stall    2 does not exist.
+20! venue 2
+Employee ID: 9   Customer ID: 6   Facility: venue 2     Date: [8-6-2013]   People: 25     Hours: 5 
+Employee ID: 9   Customer ID: 7   Facility: venue 2     Date: [9-9-2013]   People: 50     Hours: 3 
+0
+end
+Finished processing all commands. bye!]0;hnp8100@omega:~/java/Project5[hnp8100@omega Project5]$ exit
+exit
+
+Script done on Wed 04 Dec 2013 11:36:36 PM CST
